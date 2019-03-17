@@ -33,6 +33,8 @@ body {
   font-size: 0.7em;
   width: 100%;
   box-shadow: none;
+  background-color: var(--zeta);
+  padding: 1em;
 }
 .reveal pre .nl {
   color: var(--epsilon);
@@ -78,6 +80,8 @@ body {
 
 .reveal section img {
   border: none;
+  background: none;
+  box-shadow: none;
 }
 .reveal blockquote {
   text-align: left;
@@ -143,11 +147,37 @@ body {
           <h2>Roadmap</h2>
 
           <ol>
+            <li><a href="#/chapter-0">Background</a></li>
             <li><a href="#/chapter-1">Atomic Commands</a></li>
             <li><a href="#/chapter-2">Pipelining</a></li>
             <li><a href="#/chapter-3">Multi</a></li>
             <li><a href="#/chapter-4">Lua Scripting</a></li>
           </ol>
+        </section>
+
+
+        <section id="chapter-0">
+          <h2>Background</h2>
+        </section>
+
+
+        <section>
+          <h3>Background</h3>
+
+          <ul>
+            <li>Redis is Mostly Single-Threaded
+              <ul>
+                <li>Except for things like Background IO</li>
+              </ul>
+            </li>
+            <li>Node.js is Mostly Single-Threaded
+              <ul>
+                <li>Except for IO and Node v10 Worker Threads</li>
+              </ul>
+            </li>
+            <li>Atomicity: Complex operations happen uninterupted</li>
+            <li>This becomes a problem with multiple clients</li>
+          </ul>
         </section>
 
 
@@ -157,15 +187,41 @@ body {
 
 
         <section>
-          <h3>TODO</h3>
+          <h3>Every <em>Single</em> Command is Atomic</h3>
 
-          <ul>
-            <li>Lorem ipsum stuffum thingolons</li>
-            <li>Lorem ipsum stuffum thingolons</li>
-            <li>Lorem ipsum stuffum thingolons</li>
-            <li>Lorem ipsum stuffum thingolons</li>
-            <li>Lorem ipsum stuffum thingolons</li>
-          </ul>
+          <pre><code class="ini">GET foo
+
+SET foo 1
+
+DEL foo</code></pre>
+        </section>
+
+
+        <section id="interleaving-1">
+          <h3><em>Multiple</em> Commands aren't Atomic</h3>
+          <img src="images/interleaving-1.png" />
+        </section>
+        <section id="interleaving-2">
+          <h3><em>Multiple</em> Commands aren't Atomic</h3>
+          <img src="images/interleaving-2.png" />
+        </section>
+        <section id="interleaving-3">
+          <h3><em>Multiple</em> Commands aren't Atomic</h3>
+          <img src="images/interleaving-3.png" />
+        </section>
+        <section id="interleaving-4">
+          <h3><em>Multiple</em> Commands aren't Atomic</h3>
+          <img src="images/interleaving-4.png" />
+        </section>
+
+
+        <section>
+          <h3>Common use-cases have Atomic variants</h3>
+
+          <pre><code class="ini">INCR foo # increment `foo`
+SETNX bar # set if not exist `bar`
+RPOPLPUSH src dest # move an item
+GETSET key value # get old set new</code></pre>
         </section>
 
 
