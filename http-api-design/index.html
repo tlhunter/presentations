@@ -1,0 +1,595 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HTTP API Design by @tlhunter</title>
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css">
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <script>
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+
+<style>
+body {
+  background-color: #111;
+}
+.reveal pre {
+  background-color: #000;
+  padding: 1rem;
+}
+
+.reveal pre .nl {
+  color: #666;
+}
+
+.reveal pre .hljs {
+  background-color: #000;
+}
+
+.reveal li code {
+  background-color: #000;
+  border-radius: 8px;
+  color: #8dcffc;
+}
+
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+  text-transform: initial;
+}
+
+.reveal h1 {
+  color: #17ff2e;
+}
+
+.reveal .bitly {
+  font-family: monospace;
+}
+
+.reveal section img {
+  border: none;
+}
+
+.reveal .intro h2 {
+  color: #17ff2e;
+}
+
+.quote {
+  color: #ccc;
+}
+</style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section class="intro">
+          <h2>HTTP API Design</h2>
+          <h3>Presented by <a href="https://twitter.com/tlhunter">@tlhunter</a></h3>
+
+          <a href="http://bit.ly/2hlATo2"><img src="images/advanced-microservices.jpg" width="183" height="278" /></a>
+          <p>Advanced Microservices: <a href="http://bit.ly/2hlATo2" class="bitly">thomashunter.name/ms</a></p>
+        </section>
+
+        <section>
+          <ul>
+            <li>Section 1: Requests</li>
+            <li>Section 2: Responses</li>
+            <li>Section 3: Bodies</li>
+            <li>Section 4: API Standards</li>
+          </ul>
+        </section>
+
+
+
+        <!-- SECTION -->
+
+        <section>
+          <h2>Section 1:</h2>
+          <h1>Requests</h1>
+        </section>
+
+        <section>
+          <h3>HTTP Request Overview</h3>
+
+<pre>POST /v1/animal HTTP/1.1<span class="nl">\n        &lt;-- Request Line</span>
+Host: api.example.org<span class="nl">\n           &lt;-- Request Headers</span>
+Accept: application/json<span class="nl">\n</span>
+Content-Type: application/json<span class="nl">\n</span>
+Content-Length: 24<span class="nl">\n</span>
+<span class="nl">\n                                &lt;-- Two Newlines</span>
+{<span class="nl">\n                               &lt;-- Body</span>
+  "name": "Gir",<span class="nl">\n</span>
+  "animal_type": "12"<span class="nl">\n</span>
+}<span class="nl">\n</span></pre>
+        </section>
+
+        <section>
+          <h3>Endpoints (Paths)</h3>
+
+          <ul>
+            <li>Represent data as collections of resources</li>
+            <li>Represent all actions as CRUD operations</li>
+            <li><code>/collection</code></li>
+            <li><code>/collection/{resource_id}</code></li>
+            <li><code>/collection/{resource_id}/sub</code></li>
+            <li><code>/collection/{resource_id}/sub/{id}</code></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>GET Method</h3>
+
+          <ul>
+            <li>Read resource or resources</li>
+            <li>Safe: doesn't alter state</li>
+            <li>Idempotent: repeatable</li>
+            <li>Shouldn't have a body</li>
+            <li><code>GET /collection?filters</code></li>
+            <li><code>GET /collection/{resource_id}?fields</code></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>POST Method</h3>
+
+          <ul>
+            <li>Create resource</li>
+            <li>Unsafe: alters state</li>
+            <li>Not Idempotent: repeating will create new resource</li>
+            <li>Should have a body</li>
+            <li><code>POST /collection</code></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>DELETE Method</h3>
+
+          <ul>
+            <li>Destroys resource</li>
+            <li>Unsafe: alters state</li>
+            <li>Idempotent: repeating has no side effect</li>
+            <li>Shouldn't have a body</li>
+            <li><code>DELETE /collection/{resource_id}</code></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>PUT/PATCH Methods</h3>
+
+          <ul>
+            <li>Update resource</li>
+            <li>Unsafe: alters state</li>
+            <li>Idempotent: repeating has no side effect</li>
+            <li>Should have a body</li>
+            <li><code>PUT /collection/{resource_id}</code>
+              <ul>
+                <li>Replace entire resource</li>
+              </ul>
+            </li>
+            <li><code>PATCH /collection/{resource_id}</code>
+              <ul>
+                <li>Replace partial resource</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>HEAD/OPTIONS Methods</h3>
+
+          <ul>
+            <li>Safe: doesn't alter state</li>
+            <li>Idempotent: repeatable</li>
+            <li>Shouldn't have a body</li>
+            <li><code>HEAD /endpoint</code>
+              <ul>
+                <li>Retrieve only the headers for a resource</li>
+              </ul>
+            </li>
+            <li><code>OPTIONS /endpoint</code>
+              <ul>
+                <li>Retrieve consumer capabilities with resource</li>
+                <li>Required by modern browseres and CORS</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Request Headers</h3>
+
+          <ul>
+            <li><code>Accept</code>: Content Types the client accepts</li>
+            <li><code>Accept-Language</code>: Language expected by client</li>
+            <li><code>Content-Length</code>: Length of request body</li>
+            <li><code>Content-Type</code>: Type of data if a body is present</li>
+            <li><code>Host</code>: For virtual hosting, usually ignored by app</li>
+            <li><code>User-Agent</code>: Information about client</li>
+          </ul>
+        </section>
+
+
+
+        <!-- SECTION -->
+
+        <section>
+          <h2>Section 2:</h2>
+          <h1>Responses</h1>
+        </section>
+
+        <section>
+          <h3>HTTP Response Overview</h3>
+
+<pre>HTTP/1.1 200 OK<span class="nl">\n                       &lt;-- Status Line</span>
+Date: Wed, 14 Jun 2017 23:23:01 GMT<span class="nl">\n   &lt;-- Response Headers</span>
+Content-Type: application/json<span class="nl">\n</span>
+Access-Control-Max-Age: 1728000<span class="nl">\n</span>
+Cache-Control: no-cache<span class="nl">\n</span>
+<span class="nl">\n                                      &lt;-- Two Newlines</span>
+{<span class="nl">\n                                     &lt;-- Body</span>
+  "id": "12",<span class="nl">\n</span>
+  "created": "2017-06-14T23:22:59Z",<span class="nl">\n</span>
+  "modified": null,<span class="nl">\n</span>
+  "name": "Gir",<span class="nl">\n</span>
+  "animal_type": "12"<span class="nl">\n</span>
+}<span class="nl">\n</span></pre>
+        </section>
+
+        <section>
+          <h3>1XX Status Codes - Informational</h3>
+
+          <ul>
+            <li>You will probably never use this</li>
+            <li><code>101 Switching Protocols</code></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>2XX Status Codes - Successful</h3>
+
+          <ul>
+            <li><code>200 OK</code></li>
+            <li><code>201 Created</code></li>
+            <li><code>202 Accepted</code> (e.g. asynchronous creation)</li>
+            <li><code>204 No Content</code></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>3XX Status Codes - Redirection</h3>
+
+          <ul>
+            <li><code>301 Moved Permanently</code></li>
+            <li><code>302 Found</code></li>
+            <li><code>307 Temporary Redirect</code></li>
+            <li><code>308 Permanent Redirect</code></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>4XX Status Codes - Client Error</h3>
+
+          <ul>
+            <li>Server state should not have been altered</li>
+            <li><code>400 Invalid Request</code></li>
+            <li><code>401 Unauthorized</code></li>
+            <li><code>403 Forbidden</code></li>
+            <li><code>404 Not Found</code></li>
+            <li><code>405 Method Not Allowed</code></li>
+            <li><code>406 Not Acceptable</code></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>5XX Status Codes - Server Error</h3>
+
+          <ul>
+            <li>All <em>Unsafe</em> requests leave server in unknown state</li>
+            <li><code>500 Internal Server Error</code></li>
+            <li><code>501 Not Implemented</code></li>
+            <li><code>503 Service Unavailable</code> (e.g. no database)</li>
+            <li><code>521 Web Server Is Down</code></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Response Headers</h3>
+
+          <ul>
+            <li><code>Cache-Control</code>: Cache policy, e.g. <code>no-cache</code></li>
+            <li><code>Content-Language</code>: E.g. <code>en-US</code></li>
+            <li><code>Content-Length</code>: Response body length in bytes</li>
+            <li><code>Content-Type</code>: E.g. <code>application/json</code></li>
+            <li><code>Date</code>: Date and time on the server</li>
+            <li><code>Expires</code>: Time when content should expire</li>
+            <li><code>Server</code>: Useless field for bragging</li>
+          </ul>
+        </section>
+
+
+
+        <!-- SECTION -->
+
+        <section>
+          <h2>Section 3:</h2>
+          <h1>Bodies</h1>
+        </section>
+
+        <section>
+          <h3>JSON (JavaScript Object Notation)</h3>
+
+          <ul>
+            <li>Preferred serialization format for most popular APIs</li>
+            <li>Terse format which easily serializes/deserializes</li>
+          </ul>
+<pre><code class="json">{
+  "strings": "value",
+  "numbers": 12,
+  "moreNumbers": -0.1,
+  "booleans": true,
+  "nullable": null,
+  "array": [1, "abc", false],
+  "object": { "very": "deep" }
+}</code></pre>
+        </section>
+
+        <section>
+          <h3>Attribute Name Casing</h3>
+
+          <ul>
+            <li><code>snake_case</code>: The most bytes</li>
+            <li><code>PascalCase</code>: The most shifts</li>
+            <li><code>camelCase</code>: Happy medium</li>
+            <li>Doesn't matter what you pick, but be consistent</li>
+            <li>Pro Tip: API doesn't need to match internal data</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Booleans</h3>
+
+          <ul>
+            <li>Use positive, happy words
+              <ul>
+                <li>Easier to remember, less glancing at docs</li>
+                <li><code>enabled</code> instead of <code>disabled</code></li>
+                <li><code>public</code> instead of <code>private</code></li>
+              </ul>
+            </li>
+            <li>No <code>is_cool</code> or <code>cool_flag</code>, just <code>cool</code></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Timestamps</h3>
+
+          <ul>
+            <li>Always use ISO 8601
+              <ul>
+                <li><code>"2017-06-15T04:23:46+00:00"</code></li>
+                <li><code>"2017-06-15T04:23:46Z"</code></li>
+                <li><code>"2017-06-15T04:23:46.987Z"</code></li>
+              </ul>
+            </li>
+            <li>Unix Epoch is unreadable and ambiguous, e.g.<br /><code>1493268311123</code></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Identifiers</h3>
+
+          <ul>
+            <li>Always transmit strings, never raw integer
+              <ul>
+                <li><em class="quote">&ldquo;32-bit iOS devices are experiencing issues due to limitations interpreting game IDs over 2,147,483,647. Fix should be out in 48 hours :)&rdquo;<br />--&nbsp;<a href="https://twitter.com/chesscom/status/874349405444460544">@chesscom</a></em></li>
+              </ul>
+            </li>
+            <li>Two types of identifiers, choose based on need
+              <ul>
+                <li>Incremental (Integer, Base62): Efficient</li>
+                <li>Random (UUID): Cannot guess ID's, count</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Versioning</h3>
+
+          <ul>
+            <li>URL (LinkedIn, Google+, Twitter):
+              <ul>
+                <li><code>https://api.example.org/v1/*</code></li>
+              </ul>
+            </li>
+            <li>Accept Header (GitHub):
+              <ul>
+                <li><code>Accept: application/json+v1</code></li>
+              </ul>
+            </li>
+            <li>Custom Header (Joyent CloudAPI):
+              <ul>
+                <li><code>X-Api-Version: 1</code></li>
+              </ul>
+            </li>
+            <li>Backward-breaking changes require new version</li>
+            <li>Deprecate old versions with an upgrade deadline</li>
+          </ul>
+        </section>
+
+
+
+        <!-- SECTION -->
+
+        <section>
+          <h2>Section 4:</h2>
+          <h1>API Standards</h1>
+        </section>
+
+        <section>
+          <h3>Simple Envelope</h3>
+          <ul>
+            <li>Provide standardized metadata about response</li>
+          </ul>
+<pre><code class="json">{
+  "error": "database_connection_failed",
+  "error_human": "Unable to establish database connection",
+  "data": null
+}</code></pre>
+
+<pre><code class="json">{
+  "error": null,
+  "error_human": null,
+  "data": [{"id": "11"}, {"id": "12"}],
+  "offset": 10,
+  "per_page": 10
+}</code></pre>
+        </section>
+
+        <section>
+          <h3>JSON API</h3>
+          <ul>
+            <li>Reference other resources without redundancies</li>
+          </ul>
+<pre><code class="json">{
+  "data": [{
+    "type": "articles", "id": "1",
+    "attributes": {
+      "title": "Article Title", "body": "Content"
+    },
+    "relationships": {
+      "author": { "data": {"id": "42", "type": "people"} }
+    }
+  }],
+  "included": [{
+    "type": "people", "id": "42",
+    "attributes": { "name": "John", "age": 80 }
+  }]
+}</code></pre>
+        </section>
+
+        <!--
+        <section>
+          <h3>JSON Schema</h3>
+          <ul>
+            <li>TODO</li>
+          </ul>
+        </section>
+        -->
+
+        <section>
+          <h3>GraphQL (Request)</h3>
+          <ul>
+            <li>Specify desired fields, great for facade's</li>
+          </ul>
+
+<pre><code class="graphql">{
+  user(id: "tlhunter") {
+    id
+    name
+    photo {
+      id
+      url
+    }
+    friends {
+      id
+      name
+    }
+  }
+}</code></pre>
+        </section>
+
+        <section>
+          <h3>GraphQL (Response)</h3>
+          <ul>
+            <li>Data returned as JSON from multiple services</li>
+          </ul>
+
+<pre><code class="json">{
+  "data": {
+    "user": {
+      "name": "Thomas Hunter II",
+      "id": "tlhunter",
+      "photo": { "id": "12", "url": "http://im.io/12.jpg" },
+      "friends": [
+        { "name": "Rupert Styx", "id": "rupertstyx" }
+      ]
+    }
+  }
+}</code></pre>
+        </section>
+
+        <section>
+          <h3>MessagePack</h3>
+
+          <ul>
+            <li>Binary representation of JSON</li>
+            <li>JSON (31 bytes, w/o whitespace)</li>
+          </ul>
+
+<pre><code class="json">{
+  "id": "tlhunter",
+  "xyz": [1,2,3]
+}
+</code></pre>
+
+          <ul>
+            <li>Corresponding MessagePack (21 bytes)</li>
+          </ul>
+
+<pre>82 a2 69 64 a8 74 6c 68 75 6e 74
+65 72 a3 78 79 7a 93 01 02 03</pre>
+        </section>
+
+        <section>
+          <h3>JSON RPC</h3>
+
+          <ul>
+            <li>Request</li>
+          </ul>
+
+<pre><code class="json">{"jsonrpc":"2.0","method":"subtract","params":[42,23],"id":1}</code></pre>
+
+          <ul>
+            <li>Response</li>
+          </ul>
+
+<pre><code class="json">{"jsonrpc": "2.0", "result": 19, "id": 1}</code></pre>
+
+          <ul>
+            <li>No endpoint/CRUD abstractions like with HTTP</li>
+            <li>RPC happily exists outside of HTTP (TCP, IPC)</li>
+            <li>If over HTTP, probably single endpoint w/ POST</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Questions?</h2>
+          <ul>
+            <li>Follow me: <a href="https://twitter.com/tlhunter">@tlhunter</a></li>
+            <li>Content adapted from Advanced Microservices:<br /><a href="http://bit.ly/2hlATo2" class="bitly">thomashunter.name/ms</a></li>
+          </ul>
+        </section>
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      Reveal.initialize({
+        dependencies: [
+          { src: 'plugin/markdown/marked.js' },
+          { src: 'plugin/markdown/markdown.js' },
+          { src: 'plugin/notes/notes.js', async: true },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        ]
+      });
+    </script>
+  </body>
+</html>

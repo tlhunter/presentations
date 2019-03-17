@@ -1,0 +1,21 @@
+de4855a4952dafcaa20e37e6cee3e4d9ed2bd11d 2018-07-20T17:16:13-07:00 "Thomas Hunter II <tom@intrinsic.com>" | remove subtle code block background
+d0b619a6ef60dcf756c488346620491694218c03 2018-07-19T17:15:19-07:00 "Thomas Hunter II <tom@intrinsic.com>" | more content
+609e71af4441e8fe1682eb42b87414450dff9b9a 2018-07-19T15:20:51-07:00 "Thomas Hunter II <tom@intrinsic.com>" | explain why for...in loops need .hasOwnProperty()
+1bed1f1163b6e297d56fec4bcb9d122cdd176643 2018-07-19T14:52:30-07:00 "Thomas Hunter II <tom@intrinsic.com>" | reducing confusion
+8b4f28d282a26fcfd9d33898e95b93851137cd19 2018-07-19T11:16:09-07:00 "Thomas Hunter II <tom@intrinsic.com>" | ol for numbers
+981327fc9d51894e1e4f5caabaa536ad93c348ca 2018-07-19T11:11:10-07:00 "Thomas Hunter II <tom@intrinsic.com>" | consistent quotes
+958b0a558e2b947652b666d93ec798ac661a7eff 2018-07-19T11:06:12-07:00 "Thomas Hunter II <tom@intrinsic.com>" | intrinsic link
+d124c0a265a2f2f548e6f44b774e48a80a3ae795 2018-07-19T11:00:21-07:00 "Thomas Hunter II <tom@intrinsic.com>" | hybrid color theme
+960076ea22c8cc71d172420d267f94e1c8ac1406 2018-07-19T10:36:06-07:00 "Thomas Hunter II <tom@intrinsic.com>" | content tweaks based on Bryan/Devon feedback
+ff48d466ead51f525e041365029deb30b9f20fe7 2018-07-06T13:56:25-07:00 "Thomas Hunter II <tom@intrinsic.com>" | fix table
+f5a7c0dec751d344d64b0f96c78304662c1e50e8 2018-07-06T13:46:49-07:00 "Thomas Hunter II <tom@intrinsic.com>" | frozen, seal, extensible summary
+1f5ef6c16ae1d588fb77db4a22be915883e3e3e2 2018-07-05T17:51:43-07:00 "Thomas Hunter II <tom@intrinsic.com>" | first pass complete
+5026ff754c1f7c77608cf67fd5a49e51f0b0fcbb 2018-07-05T16:12:26-07:00 "Thomas Hunter II <tom@intrinsic.com>" | sealing, preventing extension, freezing
+c35e6cc7fa37e0a38ba8b454945b28d0b7a38844 2018-07-02T23:20:02-07:00 "Thomas Hunter II <me@thomashunter.name>" | all object properties have descriptors
+a9d880f27a60a3b6309d24f7f0f7ce9d74084890 2018-07-02T21:57:14-07:00 "Thomas Hunter II <me@thomashunter.name>" | proxy prototype traps
+49d922aedb33b35f1624b82b41d5886304689574 2018-07-02T21:35:00-07:00 "Thomas Hunter II <me@thomashunter.name>" | get, has, set Proxy
+1823edf15a8b9239a0d1117e4db7dabbea936ccc 2018-07-01T17:31:32-07:00 "Thomas Hunter II <me@thomashunter.name>" | object literal getter setter syntax
+a0f9bfab64161bf85cd935baa6014cced3280302 2018-07-01T16:30:49-07:00 "Thomas Hunter II <me@thomashunter.name>" | property descriptor pop quiz
+12bc215134fa904297b810764908f9b387725829 2018-07-01T16:01:38-07:00 "Thomas Hunter II <me@thomashunter.name>" | property descriptor slides
+07660e8bc5391e3e106f83fc2f69688c1f7365f8 2018-06-30T12:39:22-07:00 "Thomas Hunter II <me@thomashunter.name>" | reveal.js and basic outline
+1cea51182b6fbdccc78648fde409608da32a741e 2018-06-30T12:10:56-07:00 "Thomas Hunter II <me@thomashunter.name>" | init

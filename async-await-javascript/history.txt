@@ -1,0 +1,28 @@
+da15d1c234ba0fdfbaace2923a0442e3bb80d091 2018-02-13T09:39:07-08:00 "Thomas Hunter II <me@thomashunter.name>" | employer logo
+88047f7b7d661b1e5e93279c98c776db69d0ff0e 2018-02-12T21:08:12-08:00 "Thomas Hunter II <me@thomashunter.name>" | omni-present twitter logo
+907c7e55ddc89ab73ea5c445b9abd3f8699f7008 2018-02-12T21:00:59-08:00 "Thomas Hunter II <me@thomashunter.name>" | promisify anti-pattern
+a625916458538d092f196a364f0f460f2966d5d7 2017-10-31T19:58:55-07:00 "Thomas Hunter II <me@thomashunter.name>" | Update synopsis.md
+8c1609c817c788065bbd3d908a14defd2bc637bf 2017-10-28T13:35:59-03:00 "Thomas Hunter II <me@thomashunter.name>" | 2017: Year of the Book Tour
+89cddd710443ad7a60fc02ba6da6d4837023b3b6 2017-10-28T08:33:47-03:00 "Thomas Hunter II <me@thomashunter.name>" | last minute tweaks
+62eb52ab9ffbd5157a057415f295e6f0d09a1543 2017-10-27T14:34:32-03:00 "Thomas Hunter II <me@thomashunter.name>" | hiding book link, no questions at NodeConf AR
+3187f5c318919f4b0fb77df2142a3b8aecf0bddb 2017-10-26T09:03:55-05:00 "Thomas Hunter II <me@thomashunter.name>" | Adding clocks to show future executions
+c9a99ca36354782165d9ad7015ad49dca21fca47 2017-10-22T17:24:21-07:00 "Thomas Hunter II <me@thomashunter.name>" | terser generator wrapper
+8035af296a403f420243b36e81e2e0e2358686dd 2017-10-22T17:24:01-07:00 "Thomas Hunter II <me@thomashunter.name>" | make examples more like presentation
+3fb8f33d3028f1cf1cc793cca0486468bcca47a1 2017-10-22T13:35:23-07:00 "Thomas Hunter II <me@thomashunter.name>" | fixing up examples
+b2d58d407103b9ef4b3ec122afb755cfaa2b44ad 2017-10-22T13:18:09-07:00 "Thomas Hunter II <me@thomashunter.name>" | rename Stage to Phase (standards ambiguity), add promisify slide
+81338f824de1877247b2eb79a062856f39bcea78 2017-10-21T13:23:42-07:00 "Thomas Hunter II <me@thomashunter.name>" | fix syntax highlight, refactor names, callback error propagation
+44d4d4ad68e652a9d04844e2f70adecd2548a41f 2017-10-21T13:00:05-07:00 "Thomas Hunter II <me@thomashunter.name>" | promise/async interop: top down vs bottom up
+975a3bd28485d90df6831c74b9ef20a576bcef83 2017-10-21T12:52:34-07:00 "Thomas Hunter II <me@thomashunter.name>" | caller before callee, add async/promise interop slides
+05c1377430a1b0e74e72358f1ea798c514f0809c 2017-10-04T23:16:41-07:00 "Thomas Hunter II <me@thomashunter.name>" | slides with error examples
+4c5eaf855578cfe744f21f0bc24a828a2233ffb7 2017-09-04T14:26:37-07:00 "Thomas Hunter II <me@thomashunter.name>" | gotta show them errors
+8f937c9e811fa27f1cb9a320e2e0705b314fb85c 2017-09-04T13:51:24-07:00 "Thomas Hunter II <me@thomashunter.name>" | combine generator sections
+6f13c8c113b544a63707f80aba69825b340b5cc7 2017-09-04T13:29:35-07:00 "Thomas Hunter II <me@thomashunter.name>" | code example for each stage
+121987be86f6b9ca745aaa8a1a5e2313d25e7363 2017-09-03T20:03:30-07:00 "Thomas Hunter II <me@thomashunter.name>" | more notes
+d720f7a22efb6ea2b116e67cee23d014abdb6f54 2017-09-01T08:40:52-07:00 "Thomas Hunter II <me@thomashunter.name>" | examples swapping async and normal promise
+19c8f931dd7144d352d91e94c0c07fee2494dfd9 2017-08-22T21:35:51-07:00 "Thomas Hunter II <me@thomashunter.name>" | more async examples
+a9edf74101f672ae7faa07287baa45e772820d64 2017-08-16T12:37:51-07:00 "Thomas Hunter II <thunter@opentable.com>" | fixing transpiled
+009234f9473302a77dd3e120f886be26718a15ae 2017-08-15T22:55:56-07:00 "Thomas Hunter II <me@thomashunter.name>" | no more mono
+cd6bafc6647c3774efdc9cd70b50d3cac0c3b9cf 2017-08-15T22:14:01-07:00 "Thomas Hunter II <me@thomashunter.name>" | example files, version info
+0b8a3ffeb1facc5178abcbc9c1b9e3cf9ce949ff 2017-08-13T16:11:39-07:00 "Thomas Hunter II <me@thomashunter.name>" | Reveal.js
+3b8c1d1a2e37ad3074c41ebb9fa2def84107ad70 2017-08-13T15:30:36-07:00 "Thomas Hunter II <me@thomashunter.name>" | wip
+77d43030eb8c85765dcfb29d7e92e21e3502f5da 2017-08-13T15:27:08-07:00 "Thomas Hunter II <me@thomashunter.name>" | init

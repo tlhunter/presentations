@@ -1,0 +1,546 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Long Road to Async/Await in JavaScript by @tlhunter</title>
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css">
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <script>
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+    <!-- Color Scheme is "Para portafolio": https://color.adobe.com/Para-portafolio-color-theme-9783464/ -->
+<style>
+body {
+  background-color: #2C3E50;
+}
+
+.reveal pre {
+  font-size: 0.7em;
+  width: 100%;
+}
+
+.reveal pre .nl {
+  color: #D7DADB;
+}
+
+.reveal pre .hljs {
+  background-color: #000;
+}
+
+.reveal pre code {
+  max-height: 500px;
+}
+
+.reveal li code {
+  background-color: #000;
+  border-radius: 8px;
+  color: #6DBCDB;
+  padding: 0 10px;
+}
+
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+  text-transform: initial;
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.attention {
+  color: #FC4349;
+  text-shadow: 0px 1px 5px #000000;
+}
+
+.reveal .intro h3 {
+  color: #D7DADB;
+}
+
+.reveal section img {
+  border: none;
+}
+
+.quote {
+  color: #D7DADB;
+}
+
+.reveal blockquote {
+  text-align: left;
+  width: auto;
+}
+
+.reveal blockquote .author {
+  text-align: right;
+}
+
+.reveal a {
+  color: #6DBCDB;
+}
+
+.reveal pre .highlight {
+  color: #6DBCDB;
+}
+
+.reveal .progress span {
+  background-color: #6DBCDB;
+}
+
+.reveal .controls .navigate-left, .reveal .controls .navigate-left.enabled {
+  border-right-color: #FC4349;
+}
+
+.reveal .controls .navigate-right, .reveal .controls .navigate-right.enabled {
+  border-left-color: #FC4349;
+}
+.reveal .controls .navigate-up, .reveal .controls .navigate-down {
+  visibility: none;
+}
+#twitter {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  font-size: 3em;
+}
+#twitter, #twitter a {
+  color: #D7DADB;
+  text-decoration: none;
+  font-family: "Source Sans Pro", Helvetica, sans-serif;
+  font-weight: 600;
+  text-shadow: 0px 1px 5px #000000;
+}
+</style>
+  </head>
+
+  <body>
+    <div id="twitter"><a href="https://twitter.com/tlhunter">@tlhunter</a></div>
+    <div class="reveal">
+      <div class="slides">
+
+        <section class="intro">
+          <h2>The Long Road to Async/Await<br /> in JavaScript</h2>
+          <h3>Thomas Hunter II</h3>
+
+          <img src="./images/intrinsic.svg" width="35%" style="background: transparent; box-shadow: none;" />
+
+          <p><br />Advanced Microservices Book:<br /><a href="http://bit.ly/2hlATo2" class="bitly">thomashunter.name/ms</a></p>
+        </section>
+
+
+        <section>
+          <h3>Evolution of Asynchronous Control Flow</h2>
+
+          <ul>
+            <!--<li><code>Phase 0</code>: Synchronous Code</li>-->
+            <li><code>Phase 1</code>: Callbacks</li>
+            <li><code>Phase 2</code>: Promises</li>
+            <li><code>Phase 3</code>: Generators/Yield</li>
+            <li><code>Phase 4</code>: Async/Await</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h2>Phase 0: Synchronous Code</h2>
+        </section>
+
+
+        <section>
+          <h3>Synchronous Code (Single Stack)</h2>
+<pre><code class="javascript">let result = sendMessage('tlhunter', 'hi')
+console.log(result)
+
+function sendMessage(userId, message) {
+  let user = getUser(userId)
+  let able = canSend(user)
+  if (!able) return false
+  return writeMessage(user, message)
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Synchronous Code Error Handling</h2>
+<pre><code class="javascript">try {
+  var result = sendMessage('tlhunter', 'hi')
+} catch (err) {
+  return console.error(err)
+}
+console.log(result)
+
+function sendMessage(userId, message) {
+  throw new Error('Bad Stuff')
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h2>Phase 1: Callbacks</h2>
+        </section>
+
+
+        <section>
+          <h3>Callbacks</h2>
+<pre><code class="javascript">sendMessage('tlhunter', 'hi', ⏰(err, result) => {
+  console.log(result)
+})
+
+function sendMessage(userId, message, cb) {
+  getUser(userId, ⏰(err, user) => {
+    canSend(user, ⏰(err, able) => {
+      if (!able) { cb(null, false); return }
+      writeMessage(user, message, cb)
+    })
+  })
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Callback Error Handling</h2>
+<pre><code class="javascript">sendMessage('tlhunter', 'hi', ⏰(err, result) => {
+  if (err) {
+    return console.error(err)
+  }
+  console.log(result)
+})
+
+function sendMessage(userId, message, cb) {
+  setImmediate(⏰() => cb(new Error('Bad Stuff')))
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Callback Error Propagation</h2>
+<pre><code class="javascript">function sendMessage(userId, message, cb) {
+  getUser(userId, ⏰(err, user) => {
+    if (err) { cb(err); return } // error check
+    canSend(user, ⏰(err, able) => {
+      if (err) { cb(err); return } // error check
+      if (!able) { cb(null, false); return }
+      writeMessage(user, message, cb)
+    })
+  })
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h2>Phase 2: Promises</h2>
+
+          <ul>
+            <li>ES2015 (ES6)</li>
+            <li>ES5 with Polyfill, e.g. Bluebird</li>
+            <li>Node.js v0.12</li>
+            <li>Chrome 32</li>
+            <li>Firefox 29</li>
+            <li>Safari 7.1</li>
+            <li>Microsoft Edge</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Promises</h2>
+<pre><code class="javascript">sendMessage('tlhunter', 'hi').then(⏰(result) => {
+  console.log(result)
+})
+
+function sendMessage(userId, message) {
+  return getUser(userId).then(⏰(user) => {
+    return canSend(user)
+  }).then(⏰(able) => {
+    if (!able) return false
+    return writeMessage(user, message)
+  })
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Promise Rejection</h2>
+<pre><code class="javascript">sendMessage('tlhunter', 'hi').then(⏰(result) => {
+  console.log(result)
+}).catch(⏰(err) => {
+  console.error(err)
+})
+
+function sendMessage(userId, message) {
+  return Promise.reject(new Error('Bad Stuff'))
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h2>Phase 3: Generators/Yield</h2>
+
+          <ul>
+            <li>ES2015 (ES6)</li>
+            <li>Can Transpile, Cannot Polyfill</li>
+            <li>Node.js v1.0 (aka io.js)</li>
+            <li>Chrome 39</li>
+            <li>Firefox 27</li>
+            <li>Safari 10</li>
+            <li>Microsoft Edge 13</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Generators/Yield</h2>
+<pre><code class="javascript">let gen = sendMessage('tlhunter', 'hi')
+gen.next().value.then(⏰(user) => {
+  return gen.next(user).value.then(⏰(able) => {
+    return gen.next(able).value.then(⏰(result) => {
+      console.log(result)
+    })
+  })
+})
+function * sendMessage(userId, message) {
+  let user = ⏰yield getUser(userId)
+  let able = ⏰yield canSend(user)
+  if (!able) return false
+  return writeMessage(user, message)
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Generators/Yield + co</h2>
+<pre><code class="javascript">const co = require('co')
+sendMessage('tlhunter', 'hi').then(⏰(result) => {
+  console.log(result)
+})
+function sendMessage(userId, message) {
+  return co(function * sendMessageGen() {
+    let user = ⏰yield getUser(userId)
+    let able = ⏰yield canSend(user)
+    if (!able) return false
+    return writeMessage(user, message)
+  })
+}</code></pre>
+        </section>
+
+
+<!--
+        <section>
+          <h3>co-like function by Forbes Lindesay</h2>
+<pre><code class="javascript">function coLike(fn) {
+  return function (...args) {
+    const gen = fn.call(this, ...args)
+    const handler = res => {
+      return res.done ? Promise.resolve(res.value)
+        : Promise.resolve(res.value).then(
+          x => handler(gen.next(x)),
+          err => handler(gen.throw(err))
+        )
+    }
+    try { return handler(gen.next()) }
+    catch (err) { return Promise.reject(err) }
+  }
+}</code></pre>
+        </section>
+-->
+
+
+        <section>
+          <h3>Generators/Yield + co Rejection</h2>
+<pre><code class="javascript">const co = require('co')
+sendMessage('tlhunter', 'hi').then(⏰(result) => {
+  console.log(result)
+}).catch(⏰(err) => {
+  console.error(err)
+})
+function sendMessage(userId, message) {
+  return co(function * sendMessageGen() {
+    ⏰yield Promise.reject(new Error('Bad Stuff'))
+  })
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h2>Phase 4: Async/Await</h2>
+
+          <ul>
+            <li>ES2017 (ES8)</li>
+            <li>Can Transpile, Cannot Polyfill</li>
+            <li>Node.js v8.3</li>
+            <li>Chrome 55</li>
+            <li>Firefox 52</li>
+            <li>Safari 10.1</li>
+            <li>Microsoft Edge 13</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Async/Await</h2>
+<pre><code class="javascript">(async () => {
+  let result = ⏰await sendMessage('tlhunter', 'hi')
+  console.log(result)
+})()
+
+async function sendMessage(userId, message) {
+  let user = ⏰await getUser(userId)
+  let able = ⏰await canSend(user)
+  if (!able) return false
+  return writeMessage(user, message)
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Async/Await Error Handling</h2>
+<pre><code class="javascript">(async () => {
+  try {
+    var result = ⏰await sendMessage('tlh', 'hi')
+  } catch(err) {
+    return console.error(err)
+  }
+  console.log(result)
+})()
+
+async function sendMessage(userId, message) {
+  throw new Error('Bad Stuff')
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h2>Promise and Async/Await Interop</h2>
+          <h4>Async Functions: They're Just Promises!</h4>
+        </section>
+
+
+        <section>
+          <h3>Async Refactor (Bottom Up)</h2>
+<pre><code class="javascript">sendMessage('tlhunter', 'hi').then(⏰(result) => {
+  console.log(result)
+})
+
+async function sendMessage(userId, message) {
+  let user = ⏰await getUser(userId)
+  let able = ⏰await canSend(user)
+  if (!able) return false
+  return writeMessage(user, message)
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Async Refactor (Bottom Up)</h2>
+<pre><code class="javascript">sendMessage('tlhunter', 'hi').then(⏰(result) => {
+  console.log(result)
+}).catch(⏰(err) => {
+  console.error(err)
+})
+
+async function sendMessage(userId, message) {
+  throw new Error('Bad Stuff')
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Async Refactor (Top Down)</h2>
+<pre><code class="javascript">(async () => {
+  let result = ⏰await sendMessage('tlhunter', 'hi')
+  console.log(result)
+})()
+function sendMessage(userId, message) {
+  return getUser(userId).then(⏰(user) => {
+    return canSend(user)
+  }).then(⏰(able) => {
+    if (!able) return false
+    return writeMessage(user, message)
+  })
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Async Refactor (Top Down)</h2>
+<pre><code class="javascript">(async () => {
+  try {
+    var result = ⏰await sendMessage('tlh', 'hi')
+  } catch(err) {
+    return console.error(err)
+  }
+  console.log(result)
+})()
+
+function sendMessage(userId, message) {
+  return Promise.reject(new Error('Bad Stuff'))
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Node API Promisification</h2>
+<pre><code class="javascript">const util = require('util')
+const pifall = require('pifall')
+const fs = require('fs')
+
+const readFile = util.promisify(fs.readFile)
+pifall(fs)
+
+// Can you spot the anti-pattern?
+;(async () => {
+  let stuff = ⏰await readFile('stuff.txt')
+  let data = ⏰await fs.readFileAsync('data.txt')
+  console.log(`${stuff}, ${data}`)
+})()</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Node API Promisification</h2>
+<pre><code class="javascript">const util = require('util')
+const pifall = require('pifall')
+const fs = require('fs')
+
+const readFile = util.promisify(fs.readFile)
+pifall(fs)
+
+;(async () => {
+  let [stuff, data] = ⏰await Promise.all([
+    readFile('stuff.txt'),
+    fs.readFileAsync('data.txt')
+  ]);
+  console.log(`${stuff}, ${data}`)
+})()</code></pre>
+        </section>
+
+
+        <section>
+          <h2>Fin</h2>
+          <ul>
+            <li>Follow me: <a href="https://twitter.com/tlhunter">@tlhunter</a></li>
+            <li>Advanced Microservices Book:<br /><a href="http://bit.ly/2hlATo2" class="bitly">thomashunter.name/ms</a></li>
+          </ul>
+        </section>
+
+
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      Reveal.initialize({
+        dependencies: [
+          { src: 'plugin/markdown/marked.js' },
+          { src: 'plugin/markdown/markdown.js' },
+          { src: 'plugin/notes/notes.js', async: true },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        ]
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,320 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Debugging HTTP API's Workshop by @tlhunter</title>
+
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+<style>
+.reveal li code,
+.reveal p code {
+  background: white;
+  color: black;
+  font-size: 35px;
+}
+</style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h2>Debugging HTTP API's</h2>
+          <h3>A Workshop by <a href="https://twitter.com/tlhunter">@tlhunter</a></h3>
+          <p>Content is from a book I'm writing: <a href="http://bit.ly/2hlATo2">bit.ly/2hlATo2</a></p>
+        </section>
+
+        <section>
+          <h2>Part I: Postman</h2>
+          <ul>
+            <li>Postman is a GUI tool for editing HTTP requests</li>
+            <li>Postman is friendly for non-engineers</li>
+            <li>Ability to Import and Export libraries of requests</li>
+            <li>Extracts data from URL's to be easily editable</li>
+            <li>Install the desktop app now: <a href="https://getpostman.com">getpostman.com</a></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>First Postman Request</h2>
+          <ul>
+            <li>Type this URL into the <strong>Address</strong> field
+              <ul>
+                <li><code>https://api.github.com/users/tlhunter</code></li>
+              </ul>
+            </li>
+            <li>Click Headers
+              <ul>
+                <li>Type <code>Accept</code> and <code>application/json</code> into fields</li>
+              </ul>
+            </li>
+            <li>Click <strong>Send</strong></li>
+            <li>Content is visible below as syntax-highlighted JSON</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>First Postman Request</h2>
+
+          <img src="images/postman-simple.png" width="479" height="416" />
+        </section>
+
+        <section>
+          <h2>Parameter Extraction</h2>
+
+          <ul>
+            <li>Type this URL into the <strong>Address</strong> field:
+              <ul>
+                <li><code>https://api.github.com/users/:username/repos</code><br /><code>?sort=created&amp;direction=asc</code></li>
+              </ul>
+            </li>
+            <li>Click <strong>Params</strong>
+              <ul>
+                <li>Change <code>username</code> to <code>tlhunter</code></li>
+                <li>Change <code>direction</code> to <code>desc</code></li>
+              </ul>
+            </li>
+            <li>Click <strong>Send</strong></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Parameter Extraction</h2>
+
+          <img src="images/postman-parameters.png" width="955" height="341" />
+        </section>
+
+        <section>
+          <h2>Environments</h2>
+
+          <ul>
+            <li>Click Gear icon then <strong>Manage Environments</strong></li>
+            <li>Click <strong>Add</strong>
+              <ul>
+                <li>Set <strong>Environment Name</strong> to <code>Production</code></li>
+                <li><code>github_api</code> / <code>https://api.github.com</code></li>
+              </ul>
+            </li>
+            <li>Click <strong>Add</strong>
+              <ul>
+                <li>Set <strong>Environment Name</strong> to <code>Development</code></li>
+                <li><code>github_api</code> / <code>http://localhost</code></li>
+              </ul>
+            </li>
+            <li>Select <strong>Production</strong> in upper right dropdown</li>
+            <li>Address: <code>{{github_api}}/users/tlhunter</code></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Environments</h2>
+
+          <img src="images/postman-environments.png" width="949" height="98" />
+        </section>
+
+        <section>
+          <h2>Saving Collections</h2>
+
+          <ul>
+            <li>Click <strong>Save</strong> in top right corner
+              <ul>
+                <li>Set <strong>Request Name</strong> to <code>Get User Repos</code></li>
+                <li>Create new collection, <code>GitHub Sample</code></li>
+                <li>Click <strong>Save</strong></li>
+              </ul>
+            </li>
+            <li>Expand left <strong>Sidebar</strong> (if not visible)
+              <ul>
+                <li>Click <strong>GitHub Sample</strong> then <strong>Get User Repos</strong></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Saving Collections</h2>
+
+          <img src="images/postman-save.png" width="493" height="464" />
+        </section>
+
+        <section>
+          <h2>Importing and Exporting</h2>
+
+          <ul>
+            <li>Click <strong>File | Settings</strong></li>
+            <li>Click <strong>Data</strong> tab</li>
+            <li>Click the <strong>Download</strong> button and save file</li>
+            <li>This file can be shared, emailed, checked into Git</li>
+            <li>It will contain all collections and environments</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Importing and Exporting</h2>
+
+          <img src="images/postman-export.png" width="741" height="371" />
+        </section>
+
+        <section>
+          <h2>Part II: cURL + jq</h2>
+
+          <ul>
+            <li>cURL and jq is great for engineers</li>
+            <li>Copy and paste and you're done</li>
+            <li>Able to write complex queries to transform data</li>
+            <li>The basis of communication about HTTP</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>cURL and jq Installation</h2>
+
+          <ul>
+            <li>OS X and Homebrew
+              <ul>
+                <li><code>$ brew install jq curl</code></li>
+              </ul>
+            </li>
+            <li>Debian / Ubuntu Linux
+              <ul>
+                <li><code>$ sudo apt-get install curl</code></li>
+              </ul>
+            </li>
+            <li>Download jq binary for your system
+              <ul>
+                <li>Visit <a href="https://stedolan.github.io/jq">stedolan.github.io/jq</a></li>
+                <li><code>$ chmod +x ./jq-*</code></li>
+              </ul>
+            </li>
+            <li>Or skip the downloads and just experiment online!
+              <ul>
+                <li><a href="https://jqplay.org/">jqplay.org</a></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Simple cURL Request</h2>
+
+          <ul>
+            <li>Basic cURL request will output response to screen</li>
+          </ul>
+
+<pre><code class="bash">$ curl -X GET -H "Accept: application/json" \
+  "https://api.github.com/users/tlhunter"
+</code></pre>
+
+          <ul>
+            <li>HTTP method defaults to GET, so we can omit</li>
+            <li>GitHub API still works without Accept header</li>
+          </ul>
+
+<pre><code class="bash">$ curl "https://api.github.com/users/tlhunter"
+</code></pre>
+        </section>
+
+        <section>
+          <h2>Pipe cURL output to jq</h2>
+
+          <ul>
+            <li>Normally cURL output is displayed on screen</li>
+            <li>Now we pipe the output to jq as input</li>
+          </ul>
+
+<pre><code class="bash">$ curl "https://api.github.com/users/tlhunter" | jq "."
+</code></pre>
+
+          <ul>
+            <li>Output is now indented and syntax highlighted</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Save JSON data to file</h2>
+
+          <ul>
+            <li>Output from a command can be redirected to a file</li>
+            <li>You can even pipe cURL to jq then output to file</li>
+          </ul>
+
+<pre><code class="bash">$ curl "https://api.github.com/users/tlhunter" &gt; account.json
+$ cat account.json | jq "."
+</code></pre>
+        </section>
+
+        <section>
+          <h2>Extract partial data</h2>
+
+          <ul>
+            <li>We can extract and rename attributes from objects</li>
+          </ul>
+
+<pre><code class="bash">$ curl "https://api.github.com/users/tlhunter" \
+  | jq '{login, name, url: .html_url}'
+</code></pre>
+        </section>
+
+        <section>
+          <h2>Query Data</h2>
+
+          <ul>
+            <li>We can perform complex array operations</li>
+            <li>Let's query for all repositories that have watchers</li>
+          </ul>
+
+<pre><code class="bash">$ curl "https://api.github.com/users/tlhunter/repos" | jq \
+  '[.[] | {full_name, watchers_count}] | 
+  map(select(.watchers_count &gt;= 1))'
+</code></pre>
+
+          <ul>
+            <li>Manual: <a href="https://stedolan.github.io/jq/manual">stedolan.github.io/jq/manual</a></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Conclusion</h2>
+
+          <ul>
+            <li>Use Postman to share a library of requests</li>
+            <li>Use cURL as the lingua-franca for expressing HTTP</li>
+            <li>Use jq to query and transform JSON</li>
+            <li>Postman has a <strong>Code</strong> button which outputs cURL!</li>
+            <li>Follow me on Twitter: <a href="https://twitter.com/tlhunter">@tlhunter</a></li>
+            <li>More info in upcoming book: <a href="http://bit.ly/2hlATo2">bit.ly/2hlATo2</a></li>
+          </ul>
+        </section>
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      // More info https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        history: true,
+
+        // More info https://github.com/hakimel/reveal.js#dependencies
+        dependencies: [
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        ]
+      });
+    </script>
+  </body>
+</html>

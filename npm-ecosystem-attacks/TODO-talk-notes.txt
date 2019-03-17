@@ -1,0 +1,26 @@
+26 minutes
+
+call out left pad as not a security incident, or at least mention in some manner
+	mutable, someone else could publish, nothing bad happened tho
+	"we got lucky"
+add a screenshot slide of Package Diff
+collaborators is almost meaningless to npm, it's a GH concept
+	also, with Git/github, it can be impersonated
+	who owns? pull request? committer? etc.
+pronounced DEH-NO
+CSP misspelled implimentation
+worth mentioning integrity checks from bradley with app file hashing?
+give an example of CSP, like, it controls which URLs you can talk to
+	example header?
+	with policies it doesn't matter if you have malicious code
+avoid talking about funding OSS authors?
+	maybe state we need to rethink funding? or, as a module author myself? make more personal
+	every angry github issue is a downvote, every dollar is an upvote?
+	start convo, ask people to come after talk and tell me their opinions?
+"various values were hex encoded, other stuff was encrypted, etc."
+	used encoded and encrypted strings
+define what a supply chain attack is
+	rename to "Supply Chain Risks"?
+	maybe break this slide up, I don't think title matches body
+someone could write a bug, another person write innocent looking code which exploits
+TITLE: "Real World Attacks\nin the npm Ecosystem"

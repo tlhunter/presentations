@@ -1,0 +1,15 @@
+8cf2551da6be9d2ee4ff36d0f0a7e9eb8016965c 2017-08-07T22:53:17-07:00 "Thomas Hunter II <me@thomashunter.name>" | LFU / eviction wording
+40ba00847a4d1ddb14108ae6547037ef3a9f558d 2017-08-06T12:41:39-07:00 "Thomas Hunter II <me@thomashunter.name>" | tweaks
+af5a500d53d6753b10f469103924352e1126567d 2017-07-26T16:52:01-07:00 "Thomas Hunter II <me@thomashunter.name>" | reorder, numbered sections
+e7cfd698b10d9098264176d7da6c11ecf0f37d33 2017-07-09T20:13:01+02:00 "Thomas Hunter II <me@thomashunter.name>" | wordings
+0551eedcca95e29aba87364f80792f5d2e6ab252 2017-07-08T11:26:15+02:00 "Thomas Hunter II <me@thomashunter.name>" | larger res images
+6f0edfbf5d88e186a664a810b28f7a5fbbedac8f 2017-07-08T00:02:15+02:00 "Thomas Hunter II <me@thomashunter.name>" | tweaks
+755128f5d1d9c2e7310068c338c2a93f9bf0fe0f 2017-07-07T23:48:38+02:00 "Thomas Hunter II <me@thomashunter.name>" | pub/sub code examples
+288d3918e72dd1bf5e8af43dd21b4588c17459a1 2017-07-07T23:38:09+02:00 "Thomas Hunter II <me@thomashunter.name>" | diagrams
+12d5c81f44fe622903ff5af98ef89ad6baab6eed 2017-07-05T13:45:12+02:00 "Thomas Hunter II <me@thomashunter.name>" | theming
+dcae262b39ebbb7b915e967c449e5cdc512f30d1 2017-07-05T13:28:20+02:00 "Thomas Hunter II <me@thomashunter.name>" | such changes
+cf6b725f4058eee270a09839b8d4f52a07175d70 2017-07-02T15:48:51+02:00 "Thomas Hunter II <me@thomashunter.name>" | theming
+0b9849caeb8772a0dda8f9310df085118cc5be06 2017-07-02T15:19:04+02:00 "Thomas Hunter II <me@thomashunter.name>" | first pass presentation
+40eb9886724d3adb2b2c56d31ba2e6522a50eba9 2017-07-02T14:48:34+02:00 "Thomas Hunter II <me@thomashunter.name>" | formatting
+41ba0472de8dcaae90e9f6055a0ae03b4f79da1c 2017-07-02T14:46:48+02:00 "Thomas Hunter II <me@thomashunter.name>" | MARKDOWN!!1
+4bbdc51fc7a92e7b4d380c3ca9cd7ee49cf13e84 2017-07-02T14:44:06+02:00 "Thomas Hunter II <me@thomashunter.name>" | init

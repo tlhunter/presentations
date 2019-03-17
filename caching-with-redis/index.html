@@ -1,0 +1,369 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Caching with Redis by @tlhunter</title>
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css">
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <script>
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+
+<style>
+body {
+  background-color: #111;
+}
+.reveal pre {
+  background-color: #000;
+  padding: 1rem;
+  font-size: 0.7em;
+}
+
+.reveal pre .nl {
+  color: #666;
+}
+
+.reveal pre .hljs {
+  background-color: #000;
+}
+
+.reveal li code {
+  background-color: #000;
+  border-radius: 8px;
+  color: #7d14ff;
+}
+
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+  text-transform: initial;
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.attention {
+  color: #95ff14;
+}
+
+.reveal .intro h3 {
+  color: #ffffff;
+}
+
+.reveal .bitly {
+  font-family: monospace;
+}
+
+.reveal section img {
+  border: none;
+}
+
+.quote {
+  color: #ccc;
+}
+
+.reveal blockquote {
+  text-align: left;
+  width: auto;
+}
+
+.reveal blockquote .author {
+  text-align: right;
+}
+
+.reveal a {
+  color: #7d14ff;
+}
+
+.reveal pre .highlight {
+  color: #7d14ff;
+}
+.reveal .progress span {
+  background-color: #7d14ff;
+}
+
+.reveal .controls .navigate-left, .reveal .controls .navigate-left.enabled {
+  border-right-color: #95ff14;
+}
+.reveal .controls .navigate-right, .reveal .controls .navigate-right.enabled {
+  border-left-color: #95ff14;
+}
+</style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+
+        <section class="intro">
+          <h2>Caching with Redis</h2>
+          <h3>Presented by <a href="https://twitter.com/tlhunter">@tlhunter</a></h3>
+
+          <a href="http://bit.ly/2hlATo2"><img src="images/advanced-microservices.jpg" width="183" height="278" /></a>
+          <p>Advanced Microservices: <a href="http://bit.ly/2hlATo2" class="bitly">thomashunter.name/ms</a></p>
+        </section>
+
+
+        <section>
+          <h2>I: The Basics</h2>
+        </section>
+
+
+        <section>
+          <h3>What is caching?</h3>
+
+          <ul>
+            <li>Caches make your application faster</li>
+            <li>Cache problems <em>must not</em> break app</li>
+            <li>Getting outdated data from cache <em>could</em> be bad</li>
+          </ul>
+
+          <blockquote>
+            There are only two hard things in Computer Science: cache invalidation and naming things.
+            <div class="author">&mdash; Phil Karlton</div>
+          </blockquote>
+        </section>
+
+
+        <section>
+          <h3>Pseudocode: Read</h3>
+
+          <ul>
+            <li>This forms the basis of all caching</li>
+          </ul>
+
+<pre><code>MY_RECORD = CACHE.GET("RECORD_100")
+
+IF NOT MY_RECORD
+  MY_RECORD = DATABASE.GET("RECORD_100")
+  CACHE.SET("RECORD_100", MY_RECORD)
+RETURN MY_RECORD</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Pseudocode: Modify</h3>
+
+          <ul>
+            <li>Easy if app writing to DB also writes to Cache</li>
+          </ul>
+
+<pre><code>DATABASE.SET("RECORD_100", NEW_RECORD)
+
+// These two are almost the same
+CACHE.SET("RECORD_100", NEW_RECORD)
+CACHE.DELETE("RECORD_100")</code></pre>
+        </section>
+
+
+        <!--
+        <section>
+          <h3>Basic Redis Commands</h3>
+
+<pre>GET keyname
+SET keyname "value"
+DELETE keyname</pre>
+        </section>
+        -->
+
+
+        <section>
+          <h3>Nomenclature</h3>
+
+          <ul>
+            <li>Naming considerations to prevent collision</li>
+            <li>Must contain the minimum to identify data</li>
+            <li>Take keyname byte length into consideration</li>
+          </ul>
+
+<pre>appversion-collection-cversion-etc:id
+v5-animaltypes-v2-en_US:123</pre>
+        </section>
+
+
+        <section>
+          <h2>II: Passive Cache Invalidation</h2>
+        </section>
+
+
+        <section>
+          <h3>Expiration / TTL</h3>
+
+          <ul>
+            <li>Set a Time To Live (TTL) on a per-key basis</li>
+            <li>Each command has a millisecond equivalent</li>
+          </ul>
+
+<pre>SETEX keyname 120 "my text"
+SET keyname "my text" EX 120
+SET keyname "my text"
+EXPIRE keyname 120
+
+EXPIREAT keyname epoch
+
+TTL keyname
+
+TOUCH keyname</pre>
+        </section>
+
+
+        <section>
+          <h3>Key Eviction</h3>
+
+          <ul>
+            <li>Delete (evict) keys when low on memory</li>
+            <li>Set the maximum memory Redis is allowed to use</li>
+            <li>These changes are global for the Redis instance</li>
+            <li>You may want multiple Redis instances per app</li>
+          </ul>
+
+<pre>maxmemory 512mb
+maxmemory-policy &lt;policy-name&gt;</pre>
+        </section>
+
+
+        <section>
+          <h3>Key Eviction Policies</h3>
+
+          <ul>
+            <li><code>noeviction</code>: Error when adding data (default)</li>
+            <li><code>allkeys-lru</code><span class="attention">*</span>: Evict any key based on last usage</li>
+            <li><code>allkeys-random</code><span class="attention">*</span>: Evict any key randomly</li>
+            <li><code>volatile-lru</code>: Evict TTL key based on last usage</li>
+            <li><code>volatile-random</code>: Evict TTL key randomly</li>
+            <li><code>volatile-ttl</code>: Evict a key with shortest TTL</li>
+          </ul>
+
+          <p><span class="attention">* Entire Redis instance is now volatile</span></p>
+        </section>
+
+
+        <section>
+          <h3>LFU: Least Frequently Used (Redis 4.0)</h3>
+
+          <ul>
+            <li>Evict keys which aren't used that frequently</li>
+            <li><code>allkeys-lfu</code><span class="attention">*</span>: Evict any infrequently used key</li>
+            <li><code>volatile-lfu</code>: Evict TTL infrequently used key</li>
+          </ul>
+
+          <p><span class="attention">* Entire Redis instance is now volatile</span></p>
+        </section>
+
+
+        <section>
+          <h3>Pattern: Expire on Read</h3>
+
+          <ul>
+            <li>Store object as hash with time metadata</li>
+            <li>Track expiry time but don't use key TTL</li>
+            <li>Quickly reply to a request with old data</li>
+            <li>Immediately update cache with new data</li>
+            <li>E.g. first read of the day has last nights data</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Pattern: Expire on Read</h3>
+
+<pre><code class="javascript">META = CACHE.GET("R100")
+
+REPLY(META.DATA) // Potentially old Data
+
+IF META.EXPIRE &lt; NOW
+  NEW = DATABASE.GET("R100")
+  LATER = NOW.ADD("2 DAYS")
+  CACHE.SET("R100", DATA: NEW, EXPIRE: LATER)</code></pre>
+        </section>
+
+
+        <section>
+          <h2>III: Active Cache Invalidation</h2>
+        </section>
+
+
+        <section>
+          <h3>Distributed Systems Complexity</h3>
+          <ul>
+            <li>The simple cache set/delete no longer works</li>
+            <li>How does Consumer know when to update cache?</li>
+          </ul>
+          <img src="images/distributed-1.png" width="551" height="218" />
+        </section>
+
+
+        <section>
+          <h3>Distributed Systems Naive Approach</h3>
+          <ul>
+            <li>Consumers connect to a Producer-owned cache</li>
+            <li>Doubles the size of the API surface</li>
+            <li>Doubles the documentation, locations for error, etc.</li>
+            <li>Why not just have Producer be really fast?</li>
+          </ul>
+          <img src="images/distributed-1-bad.png" width="551" height="218" />
+        </section>
+
+
+        <section>
+          <h3>Pub/Sub to the Rescue</h3>
+
+          <ul>
+            <li>Here is a method we can use to invalidate caches</li>
+            <li>Producer publishes a message describing resource</li>
+            <li>Consumer is in charge of updating/removing data</li>
+          </ul>
+
+          <img src="images/distributed-2.png" width="551" height="353" />
+        </section>
+
+
+        <section>
+          <h3>Pub/Sub to the Rescue</h3>
+
+          <ul>
+            <li>Subscribe to channels representing collections</li>
+            <li>Many producers could use the same Redis server</li>
+            <li>Publish enough information to identify the resource</li>
+          </ul>
+
+<pre>SUBSCRIBE service-name:collection:version
+
+PUBLISH service-name:collection:version
+  '{"lang":"en_US","id":123}'
+PUBLISH service-name:collection:version
+  '{"lang":"en_US","id":123,"name":"xyz"}'</pre>
+        </section>
+
+
+        <section>
+          <h2>Questions?</h2>
+          <ul>
+            <li>Follow me: <a href="https://twitter.com/tlhunter">@tlhunter</a></li>
+            <li>Content adapted from Advanced Microservices:<br /><a href="http://bit.ly/2hlATo2" class="bitly">thomashunter.name/ms</a></li>
+          </ul>
+        </section>
+
+
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      Reveal.initialize({
+        dependencies: [
+          { src: 'plugin/markdown/marked.js' },
+          { src: 'plugin/markdown/markdown.js' },
+          { src: 'plugin/notes/notes.js', async: true },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        ]
+      });
+    </script>
+  </body>
+</html>

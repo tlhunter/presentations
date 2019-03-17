@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <title>The JavaScript Event Loop</title>
+    <link rel="stylesheet" href="./reveal.js-3.2.0/css/reveal.css" />
+    <link rel="stylesheet" href="./reveal.js-3.2.0/css/theme/black.css" id="theme" />
+    <link rel="stylesheet" href="./zenburn.css"/ >
+    <style>
+      .reveal pre {
+        box-shadow: none;
+        margin: 0;
+        width: auto;
+      }
+      .reveal pre code {
+        font-size: 90%;
+        line-height: 1.2em;
+        max-height: none;
+      }
+      .reveal .hljs {
+        background-color: transparent;
+      }
+      .reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+        text-transform: none;
+        color: #affa42;
+      }
+      .reveal h1 {
+        color: #fff;
+      }
+      .reveal section img {
+        border: 0px;
+        background-color: transparent;
+        margin: 0px;
+        box-shadow: none;
+      }
+      .reveal .floater {
+        position: absolute;
+        top: 0px;
+      }
+      .reveal .floater code {
+        font-size: 0.5em;
+        display: block;
+      }
+      .reveal .floater-left {
+        left: 0px;
+      }
+      .reveal .floater-right {
+        right: 0px;
+      }
+      .reveal .slides section .fragment.highlight-current-green.current-fragment {
+        color: black;
+        background-color: #affa42;
+      }
+      .reveal .slides section .fragment.highlight-current-green.current-fragment * {
+        color: black;
+      }
+      .reveal .monospace {
+        font-family: monospace;
+      }
+      .dom-output {
+        max-height: 40px;
+        overflow: hidden;
+      }
+      .dom-output div {
+        width: 1px;
+        height: 1px;
+        background-color: #ff0000;
+        display: inline-block;
+      }
+      #fps-container {
+        zoom: 200%;
+      }
+      .reveal .image-walkthrough {
+        position: absolute;
+        left: -20%;
+        top: 25%;
+      }
+      #console-order-result {
+        text-align: left;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="fps-container"></div>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h2>The JavaScript Event Loop</h2>
+          <p>Presented by <a href="https://twitter.com/tlhunter">@tlhunter</a></p>
+          <a href="http://bit.ly/2hlATo2" class="monospace"><img src="images/advanced-microservices.jpg" width="183" height="278" alt="Advanced Microservices" /></a>
+          <p>Advanced Microservices: <a href="http://bit.ly/2hlATo2" class="monospace">thomashunter.name/ms</a></p>
+        </section>
+
+        <section>
+          <h1>Part I</h1>
+          <h2>JavaScript Overview</h1>
+        </section>
+
+        <section>
+          <h3>JavaScript is Single-Threaded</h3>
+          <ul>
+            <li>Makes use of a single CPU thread (think CPU core)</li>
+            <li>Nothing done inside JavaScript is “concurrent”</li>
+            <li>Easier to reason about than Multi-Threaded</li>
+            <li>Unfortunate side-effects such as Scroll Jank&trade;</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Technical Implementation</h3>
+          <ul>
+            <li>
+              <strong>Stack</strong>:
+              <ul>
+                <li>Function calls, context information</li>
+                <li>As functions call functions, add frames to stack</li>
+                <!-- Stack Depths vary by browser: http://stackoverflow.com/a/7828803/538646 -->
+              </ul>
+            </li>
+            <li>
+              <strong>Queue</strong> <em>(Many Languages Don't Have)</em>:
+              <ul>
+                <li>Work scheduled to be added to stack</li>
+                <li>E.g. <code>setTimeout()</code> and <code>setInterval()</code></li>
+              </ul>
+            </li>
+            <li>
+              <strong>Heap</strong>:
+              <ul>
+                <li>“Chaotic” collection of objects, context vars, etc.</li>
+                <li>Garbage Collection cleans items from heap</li>
+              </ul>
+            </li>
+            <li>
+              <strong>Event Handlers</strong>:
+              <ul>
+                <li>Can add items to queue in the future</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Queue/Stack/Heap Diagram</h3>
+
+          <p><small><em>The Event Loop is named after repeatedly taking work from the queue and making new stacks.</em></small></p>
+
+          <img style="width: 400px;" src="images/stack-heap-queue.svg" />
+
+          <p><small>Image Credit: Mozilla Developer Network:<br /><a href="http://mzl.la/Y5Dh2x">http://mzl.la/Y5Dh2x</a></small></p>
+        </section>
+
+        <section>
+          <h3>Example Code-run</h3>
+          <div class="image-walkthrough">
+            <img id="walkthrough-0" src="images/stack-queue-heap-00.png" style="display: block;" />
+            <img id="walkthrough-1" src="images/stack-queue-heap-01.png" style="display: none;" />
+            <img id="walkthrough-2" src="images/stack-queue-heap-02.png" style="display: none;" />
+            <img id="walkthrough-3" src="images/stack-queue-heap-03.png" style="display: none;" />
+            <img id="walkthrough-4" src="images/stack-queue-heap-04.png" style="display: none;" />
+            <img id="walkthrough-5" src="images/stack-queue-heap-05.png" style="display: none;" />
+            <img id="walkthrough-6" src="images/stack-queue-heap-06.png" style="display: none;" />
+            <img id="walkthrough-7" src="images/stack-queue-heap-07.png" style="display: none;" />
+            <img id="walkthrough-8" src="images/stack-queue-heap-08.png" style="display: none;" />
+            <img id="walkthrough-9" src="images/stack-queue-heap-09.png" style="display: none;" />
+            <img id="walkthrough-10" src="images/stack-queue-heap-10.png" style="display: none;" />
+            <img id="walkthrough-11" src="images/stack-queue-heap-11.png" style="display: none;" />
+            <img id="walkthrough-12" src="images/stack-queue-heap-12.png" style="display: none;" />
+            <img id="walkthrough-13" src="images/stack-queue-heap-13.png" style="display: none;" />
+            <img id="walkthrough-14" src="images/stack-queue-heap-14.png" style="display: none;" />
+          </div>
+
+          <pre>
+            <code class="javascript" data-noescape>
+              <span class="fragment highlight-current-green" data-fragment-index="0" data-walkthrough="1">function run() {</span>
+                <span class="fragment highlight-current-green" data-fragment-index="4">console.log("Adding code to the stack");</span>
+
+                <span class="fragment highlight-current-green" data-fragment-index="5">setTimeout</span>(<span class="fragment highlight-current-green" data-fragment-index="1" data-walkthrough="2">function c() { // c() Added somewhere in Heap</span>
+                  <span class="fragment highlight-current-green" data-fragment-index="15">console.log("c() Running next code from queue");</span>
+                }, 0);
+
+                <span class="fragment highlight-current-green" data-fragment-index="2" data-walkthrough="3">function a(x) { // a() Added somewhere in Heap</span>
+                  <span class="fragment highlight-current-green" data-fragment-index="7">console.log("a() frame added to stack");</span>
+                  <span class="fragment highlight-current-green" data-fragment-index="8">b(x);</span>
+                  <span class="fragment highlight-current-green" data-fragment-index="12">console.log("a() frame removed from stack");</span>
+                }
+
+                <span class="fragment highlight-current-green" data-fragment-index="3" data-walkthrough="4">function b(y) { // b() Added somewhere in Heap</span>
+                  <span class="fragment highlight-current-green" data-fragment-index="9">console.log("b() frame added to stack");</span>
+                  <span class="fragment highlight-current-green" data-fragment-index="10">console.log("Value passed in is " + y);</span>
+                  <span class="fragment highlight-current-green" data-fragment-index="11">console.log("b() frame removed from stack");</span>
+                }
+
+                <span class="fragment highlight-current-green" data-fragment-index="6">a(42);</span>
+
+                <span class="fragment highlight-current-green" data-fragment-index="13">console.log("Ending work for this stack");</span><span class="fragment highlight-current-green" data-fragment-index="14"><!-- show that no work in stack --></span><span class="fragment highlight-current-green" data-fragment-index="16"><!-- show garbage collection --></span>
+              }
+            </code>
+          </pre>
+        </section>
+
+        <section>
+          <h3>Code-run Visualized with Dev Tools</h3>
+
+          <img src="./images/flamegraph.png" />
+
+          <ul>
+            <li>This type of visualization is a Flame Graph</li>
+            <li>Interactive Demo: <code><a target="_blank" href="./examples/flamegraph.html">bit.ly/2kF3TMh</a></code></li>
+          </ul>
+        </section>
+
+        <!--
+        <section>
+          <h3>TODO: Timing Slide</h3>
+        </section>
+        -->
+
+        <section>
+          <div class="floater floater-right">
+            <button id="console-order">Execute Code</button>
+            <code id="console-order-result">...</code>
+          </div>
+
+          <h3>Interview Question</h3>
+
+          <ul>
+            <li>In what order are the letters output?</li>
+            <li>Extra Credit: How long does each letter take?</li>
+          </ul>
+
+          <pre>
+            <code class="javascript">
+
+setTimeout(function() { console.log('A'); }, 0);
+
+console.log('B');
+
+setTimeout(function() { console.log('C'); }, 100);
+
+setTimeout(function() { console.log('D'); }, 0);
+
+var i = 0;
+while (i < 200000000) { // Takes ~500ms to run this loop
+  var ignore = Math.sqrt(i);
+  i++;
+}
+
+console.log('E');
+            </code>
+          </pre>
+        </section>
+<script>
+(function() {
+  var button = document.getElementById('console-order');
+  var result = document.getElementById('console-order-result');
+
+  function log(letter, time) {
+    result.innerHTML += letter + ": " + time + "ms<br />";
+  }
+
+  button.addEventListener('click', function() {
+    result.innerHTML = "";
+    var start = Date.now();
+
+    setTimeout(function() { log('A', Date.now()-start); }, 0);
+    log('B', Date.now()-start);
+    setTimeout(function() { log('C', Date.now()-start); }, 100);
+    setTimeout(function() { log('D', Date.now()-start); }, 0);
+
+    var i = 0;
+    while (i < 200000000) { // Takes ~500ms to run this loop
+      var ignore = Math.sqrt(i);
+      i++;
+    }
+
+    log('E', Date.now()-start);
+  });
+})();
+</script>
+
+        <section>
+          <h1>Part II</h1>
+          <h2>I/O Considerations</h1>
+        </section>
+
+        <section>
+          <h3>Your App is Mostly Asleep</h3>
+          <ul>
+            <li>Browser
+              <ul>
+                <li>Wait for a click to happen</li>
+                <li>Wait for AJAX response</li>
+              </ul>
+            </li>
+            <li>Node.js
+              <ul>
+                <li>All I/O is non-blocking (libuv)</li>
+                <li>C++ API does the heavy lifting</li>
+                <li>Once I/O is complete callback is queued up</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Sequential vs Parallel</h3>
+          <ul>
+            <li>Classical web apps perform each I/O Sequentially</li>
+            <li>With an Event Loop, they can be run in Parallel</li>
+            <li>Most time waiting for I/O; Sequential is inefficient</li>
+          </ul>
+
+          <h5>Sequential I/O</h5>
+          <img width="480" height="92" src="./images/sequential.svg" />
+
+          <h5>Parallel I/O</h5>
+          <img width="480" height="92" src="./images/parallel.svg" />
+        </section>
+
+        <section>
+          <h4>Why Single-Threaded Event Loops are Awesome:</h4>
+          <ul>
+            <li>No concurrent memory access problems</li>
+            <li>Usually web apps spend most time waiting on I/O</li>
+            <li>Easily perform I/O operations “in parallel”
+              <ul>
+                <li>Thanks to non-blocking APIs</li>
+              </ul>
+            </li>
+            <li>Long running apps, don’t need separate web servers</li>
+          </ul>
+        </section>
+
+        <section>
+          <h4>Why Single-Threaded Event Loops aren’t Awesome:</h4>
+
+          <ul>
+            <li>CPU intensive work will block your process</li>
+            <li>Memory leaks can happen</li>
+            <li>A single JavaScript instance cannot fully utilize CPU</li>
+          </ul>
+        </section>
+
+        <section>
+          <h1>Part III</h1>
+          <h2>Breaking up heavy workloads</h1>
+        </section>
+
+        <section>
+          <div class="floater floater-left">
+            <button id="dom-single-stack">Single Stack</button> 
+            <code id="dom-single-stack-result">...</code>
+          </div>
+
+          <h3>Single Stack: Freeze Rendering</h3>
+
+          <img src="./images/single-stack.png" style="zoom: 0.8;" />
+
+          <pre>
+            <code class="javascript">
+              var LIMIT = 200000;
+
+              function drawMany() {
+                for (var i = 0; i &lt; LIMIT; i++) {
+                  output.appendChild(document.createElement('div'));
+                }
+              }
+            </code>
+          </pre>
+
+          <div class="dom-output" id="dom-output-single"></div>
+
+          <script>
+            (function() {
+              var LIMIT = 200000;
+              var RENDER_WAIT = 10;
+
+              var buttonSingleStack = document.getElementById('dom-single-stack');
+              var resultSingleStack = document.getElementById('dom-single-stack-result');
+
+              var output = document.getElementById('dom-output-single');
+
+              function clear() {
+                while (output.firstChild) {
+                  output.removeChild(output.firstChild);
+                }
+              }
+
+              function hide() {
+                output.style.display = "none";
+              }
+
+              function show() {
+                output.style.display = "block";
+              }
+
+              function drawMany() {
+                for (var i = 0; i < LIMIT; i++) {
+                  output.appendChild(document.createElement('div'));
+                }
+              }
+
+              buttonSingleStack.addEventListener('click', function() {
+                clear();
+                resultSingleStack.innerHTML = '...';
+                // hide();
+
+                setTimeout(function() {
+                  var start = new Date();
+
+                  drawMany();
+
+                  setTimeout(function() {
+                    var end = new Date();
+                    // show();
+
+                    resultSingleStack.innerHTML = ((end - start) - RENDER_WAIT) + 'ms';
+
+                    clear();
+                  }, RENDER_WAIT); // Wait long enough so that rendering kicks in for certain
+                }, RENDER_WAIT);
+              });
+            })();
+          </script>
+        </section>
+
+        <section>
+          <div class="floater floater-left">
+            <button id="dom-many-stack">Many Stacks</button> 
+            <code id="dom-many-stack-result">...</code>
+          </div>
+
+          <h3>Queueing: Allows Rendering</h3>
+
+          <img src="./images/many-stacks.png" style="zoom: 0.8;" />
+
+          <pre>
+            <code class="javascript">
+              var LIMIT = 200000;
+              var CHUNK = 1000;
+
+              function drawFew(start, callback) {
+                for (var i = 0; i &lt; CHUNK; i++) {
+                  output.appendChild(document.createElement('div'));
+                }
+
+                if (start &gt;= LIMIT) return callback();
+
+                setTimeout(function() {
+                  drawFew(start + CHUNK, callback);
+                }, 0);
+              }
+            </code>
+          </pre>
+
+          <div class="dom-output" id="dom-output-many"></div>
+
+          <script>
+            (function() {
+              var LIMIT = 200000;
+              var CHUNK = 1000;
+              var RENDER_WAIT = 10;
+
+              var buttonManyStack = document.getElementById('dom-many-stack');
+              var resultManyStack = document.getElementById('dom-many-stack-result');
+
+              var output = document.getElementById('dom-output-many');
+
+              function clear() {
+                while (output.firstChild) {
+                  output.removeChild(output.firstChild);
+                }
+              }
+
+              function hide() {
+                output.style.display = "none";
+              }
+
+              function show() {
+                output.style.display = "block";
+              }
+
+              function drawFew(start, callback) {
+                for (var i = 0; i < CHUNK; i++) {
+                  output.appendChild(document.createElement('div'));
+                }
+
+                if (start >= LIMIT) {
+                  return callback();
+                }
+
+                setTimeout(function() {
+                  drawFew(start + CHUNK, callback);
+                }, 0);
+              }
+
+              buttonManyStack.addEventListener('click', function() {
+                clear();
+
+                // hide();
+                var start = new Date();
+                resultManyStack.innerHTML = '...';
+
+                drawFew(0, function() {
+                  var end = new Date();
+                  // show();
+
+                  resultManyStack.innerHTML = (end - start) + 'ms';
+
+                  clear();
+                });
+              });
+            })();
+          </script>
+        </section>
+
+        <section>
+          <div class="floater floater-left">
+            <button id="work-current">Current Thread</button> 
+            <code id="work-current-result">...</code>
+          </div>
+
+          <script>
+            (function() {
+              var buttonCurrent = document.getElementById('work-current');
+              var resultCurrent = document.getElementById('work-current-result');
+
+              buttonCurrent.addEventListener('click', function() {
+                var start = new Date();
+                resultCurrent.innerHTML = '...';
+                var pi = 0;
+                var n = 1;
+                for (i = 0; i <= 1000000000; i++) {
+                  pi = pi + (4/n) - (4 / (n + 2));
+                  n = n + 4;
+                }
+
+                var end = new Date();
+
+                void pi;
+
+                resultCurrent.innerHTML = (end - start) + 'ms';
+              });
+            }());
+          </script>
+
+          <div class="floater floater-right ">
+            <button id="work-worker">Worker Thread</button> 
+            <code id="work-worker-result">...</code>
+          </div>
+
+          <script>
+            (function() {
+              var buttonWorker = document.getElementById('work-worker');
+              var resultWorker = document.getElementById('work-worker-result');
+
+              try {
+                var worker = new Worker('scripts/task.js');
+
+                var start, end;
+
+                worker.onmessage = function(e) {
+                  var end = new Date();
+
+                  void e.data;
+                  resultWorker.innerHTML = (end - start) + 'ms';
+                  console.log(e);
+                };
+
+                buttonWorker.addEventListener('click', function() {
+                  start = new Date();
+                  resultWorker.innerHTML = '...';
+                  worker.postMessage({iterations: 1000000000});
+                });
+              } catch(e) {
+                console.error(e);
+                resultWorker.innerHTML = e.name;
+              }
+            }());
+          </script>
+
+          <h3>Web Workers</h3>
+          <ul>
+            <li>Separate JavaScript instance, has its own Event Loop</li>
+            <li>Message Passing via JSON structures</li>
+            <li>No deadlocks or race conditions, working with “copies”</li>
+            <li>Can't touch the DOM, tho AJAX and WebSockets work</li>
+            <!-- Use it anywhere modern: http://caniuse.com/#feat=webworkers -->
+          </ul>
+
+          <pre>
+            <code class="javascript">
+              // main.js
+              var worker = new Worker('task.js');
+              worker.postMessage({iterations: 5000000000});
+              worker.onmessage = function(e) { console.log(e.data); };
+
+              // task.js
+              onmessage = function(e) {
+                var pi = 0, n = 1;
+                for (i = 0; i &lt;= e.data.iterations; i++) {
+                  pi = pi + (4/n) - (4 / (n + 2)); n += 4;
+                }
+                postMessage(pi);
+              };
+            </code>
+          </pre>
+        </section>
+
+        <section>
+          <h3>Node.js Load Balancing</h3>
+          <ul>
+            <li>Route requests between multiple application instances</li>
+          </ul>
+          <pre>
+            <code class="javascript">
+var cluster = require('cluster');
+var http = require('http');
+
+if (cluster.isMaster) {
+  cluster.fork(); cluster.fork(); cluster.fork();
+} else {
+  http.createServer(function(req, res) {
+    res.end("Hello World from: " + process.pid);
+  }).listen(80);
+}
+            </code>
+          </pre>
+          <img src="images/node-load-balancer.png" width="421" height="162" />
+        </section>
+
+        <section>
+          <h3>Conclusion</h3>
+          <ul>
+            <li><strong>Browser:</strong>
+              <ul>
+                <li>Spend &lt; 16ms in each stack
+                  <ul>
+                    <li>Anything slower will be noticed by the human eye</li>
+                  </ul>
+                </li>
+                <li>Split heavy DOM workloads, add to queue</li>
+                <li>Offload CPU intensive work onto a Web Worker</li>
+              </ul>
+            </li>
+            <li><strong>Node.js:</strong>
+              <ul>
+                <li>Use a load balancer, run multiple app instances</li>
+                <li>The cluster module makes this easy</li>
+              </ul>
+            </li>
+          </ul>
+          <p>Advanced Microservices: <a href="http://bit.ly/2hlATo2" class="monospace">thomashunter.name/ms</a></p>
+        </section>
+      </div>
+    </div>
+
+    <script src="./reveal.js-3.2.0/lib/js/head.min.js"></script>
+    <script src="./reveal.js-3.2.0/js/reveal.js"></script>
+    <script src="./scripts/fpsmeter.min.js"></script>
+    <script>
+      var meter = new FPSMeter(document.getElementById('fps-container'), {
+        show: 'ms',
+        heat: true,
+        graph: true,
+        left: 'auto',
+        right: '5px'
+      });
+      function tick() {
+        meter.tick();
+        requestAnimationFrame(tick);
+      }
+
+      tick();
+    </script>
+
+    <script>
+      Reveal.initialize({
+        center: true,
+        history: true,
+        transition: 'convex',
+        dependencies: [
+          {
+            src: './reveal.js-3.2.0/plugin/highlight/highlight.js',
+            async: true,
+            callback: function() {
+              hljs.initHighlightingOnLoad();
+            }
+          }
+        ]
+      });
+
+      var walkthrough = [];
+
+      for (var i = 0; i <= 17; i++) {
+        walkthrough.push(document.getElementById('walkthrough-' + i));
+      }
+
+      // Lookup from fragment-index to image offset
+      // Reveal.js shows index of hidden element, not newly displayed element :(
+      var lookup = {
+        0: 0,
+        1: 1,
+        2: 2,
+        3: 3,
+        4: 4,
+        5: 5,
+        6: 6,
+        7: 6,
+        8: 7,
+        9: 7,
+        10: 8,
+        11: 8,
+        12: 8,
+        13: 9,
+        14: 10,
+        15: 11,
+        16: 12,
+        17: 14
+      };
+
+      function hideAll() {
+        for (var i = 0; i < 15; i++) {
+          walkthrough[i].style.display = 'none';
+        }
+      }
+
+      Reveal.addEventListener('fragmentshown', function(event) {
+        var frag = Math.floor(event.fragment.dataset.fragmentIndex) + 1;
+        var image = lookup[frag];
+        hideAll();
+        walkthrough[image].style.display = 'block';
+      });
+
+      Reveal.addEventListener('fragmenthidden', function(event) {
+        var frag = Math.floor(event.fragment.dataset.fragmentIndex);
+        var image = lookup[frag];
+        hideAll();
+        walkthrough[image].style.display = 'block';
+      });
+    </script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-30905176-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

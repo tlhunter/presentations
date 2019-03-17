@@ -1,0 +1,648 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Property Descriptors, Getters/Setters, and Proxies, Oh My! by @tlhunter</title>
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css">
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+    <script>
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+<style>
+/* Color Scheme: https://color.adobe.com/Screen-Shot-2018-05-31-at-2-color-theme-10875454/?showPublished=true */
+body {
+  background-color: #09090A;
+}
+
+.reveal pre {
+  font-size: 0.7em;
+  width: 100%;
+}
+
+.reveal pre .nl {
+  color: #F2F2F2;
+}
+
+.reveal pre .hljs {
+  background-color: transparent;
+}
+
+.reveal pre code {
+  max-height: 500px;
+  padding: 0px;
+}
+
+.reveal li code {
+  background-color: #000;
+  border-radius: 8px;
+  color: #48A74A;
+  padding: 0 10px;
+}
+
+.reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6 {
+  text-transform: initial;
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.attention {
+  color: #D0DC3F;
+  text-shadow: 0px 1px 5px #000000;
+}
+
+.reveal .intro h3 {
+  color: #F2F2F2;
+}
+
+.reveal section img {
+  border: none;
+}
+
+.quote {
+  color: #F2F2F2;
+}
+
+.reveal blockquote {
+  text-align: left;
+  width: auto;
+}
+
+.reveal blockquote .author {
+  text-align: right;
+}
+
+.reveal a {
+  color: #48A74A;
+}
+
+.reveal pre .highlight {
+  color: #48A74A;
+}
+
+.reveal .progress span {
+  background-color: #48A74A;
+}
+
+.reveal .controls .navigate-left, .reveal .controls .navigate-left.enabled {
+  border-right-color: #D0DC3F;
+}
+
+.reveal .controls .navigate-right, .reveal .controls .navigate-right.enabled {
+  border-left-color: #D0DC3F;
+}
+.reveal .controls .navigate-up, .reveal .controls .navigate-down {
+  display: none;
+}
+#twitter {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  font-size: 3em;
+}
+#twitter, #twitter a {
+  color: #F2F2F2;
+  text-decoration: none;
+  font-family: "Source Sans Pro", Helvetica, sans-serif;
+  font-weight: 600;
+  text-shadow: 0px 1px 5px #000000;
+}
+</style>
+  </head>
+
+  <body>
+    <div id="twitter"><a href="https://twitter.com/tlhunter">@tlhunter</a></div>
+    <div class="reveal">
+      <div class="slides">
+
+        <section class="intro">
+          <h2>Property Descriptors,<br />Getters/Setters,<br />and Proxies, Oh My!</h2>
+          <h3>Thomas Hunter II</h3>
+
+          <img src="./images/intrinsic.svg" width="35%" style="background: transparent; box-shadow: none;" />
+        </section>
+
+
+        <!--
+        <section>
+          <h3>Roadmap</h2>
+
+          <ul>
+            <li><code>1</code>: Intro to Objects</li>
+            <li><code>2</code>: Property Descriptors</li>
+            <li><code>3</code>: Proxies</li>
+          </ul>
+        </section>
+        -->
+
+
+        <section>
+          <h2>What's an Object?</h2>
+          <ul>
+            <li>A complex key/value "Hash Map" structure</li>
+            <li>Don't use as a dynamic collection (use <code>Map</code>)</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Basic Object Operations Syntax</h3>
+<pre><code class="javascript">const x = {
+  prop1: true
+}
+
+x.prop2 = 42
+
+x['prop3'] = 'quux'
+
+delete x.prop1
+
+console.log(x.prop2) // 42</code></pre>
+        </section>
+
+
+        <section>
+          <h2>Property Descriptors</h2>
+<pre><code class="javascript">Object.defineProperty(
+  obj,
+  propertyName,
+  descriptors
+)</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Value and Enumerable</h3>
+<pre><code class="javascript">const obj = {}
+Object.defineProperty(obj, 'foo', {
+  value: 'hello', // the value of the property
+  enumerable: false // will the property be visible
+})
+console.log(obj) // {}
+console.log(obj.foo) // 'hello'
+console.log(Object.keys(obj)) // []
+console.log(Reflect.ownKeys(obj)) // [ 'foo' ]
+console.log('foo' in obj) // true</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Writable and Configurable</h3>
+<pre><code class="javascript">const obj = Object.defineProperty({}, 'foo', {
+  value: 'hello',
+  writable: false, // reassignable?
+  configurable: false // deletable/redefinable?
+})
+obj.foo = 'bye'
+console.log(obj.foo) // 'hello'
+delete obj.foo
+console.log(obj.foo) // 'hello'
+Object.defineProperty(obj, 'foo', {
+  value: 1
+}) // TypeError: Cannot redefine property: foo
+</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Getters and Setters</h3>
+<pre><code class="javascript">const obj = {realAge: null}
+
+Object.defineProperty(obj, 'age', {
+  get: function() {
+    return Number(this.realAge)
+  },
+  set: function(value) {
+    this.realAge = Number(value)
+  }
+})
+
+console.log(obj.age) // 0
+obj.age = '32'
+console.log(obj.age) // 32</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Object Literal Getters and Setters</h3>
+<pre><code class="javascript">const obj = {
+  realAge: null,
+  get age() {
+    return Number(this.realAge)
+  },
+  set age(value) {
+    this.realAge = Number(value)
+  }
+}
+
+console.log(obj.age) // 0
+obj.age = '32'
+console.log(obj.age) // 32</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Pop Quiz!</h3>
+<pre><code class="javascript">
+
+
+
+
+// What code could lead to this outcome?
+
+
+
+
+
+if (typeof obj.type === 'number' &amp;&amp; obj.type &gt; 10) {
+    console.log(obj.type) // 'not twelve'
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Pop Quiz Explained</h3>
+<pre><code class="javascript">let accesses = 0
+const obj = Object.defineProperty({}, 'type', {
+  get: () =&gt; {
+    if (accesses++ &gt;= 2) {
+      return 'not twelve'
+    }
+    return 12
+  }
+})
+
+
+if (typeof obj.type === 'number' &amp;&amp; obj.type &gt; 10) {
+    console.log(obj.type) // 'not twelve'
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Pop Quiz Solved</h3>
+<pre><code class="javascript">let accesses = 0
+const obj = Object.defineProperty({}, 'type', {
+  get: () =&gt; {
+    if (accesses++ &gt;= 2) {
+      return 'not twelve'
+    }
+    return 12
+  }
+})
+
+const type = obj.type // read sensitive values once
+if (typeof type === 'number' &amp;&amp; type &gt; 10) {
+    console.log(type) // 12
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>All Object Properties have Descriptors</h3>
+<pre><code class="javascript">const obj1 = {
+  a: 1
+}
+
+console.log(Object
+  .getOwnPropertyDescriptor(obj1, 'a'))
+
+{
+  value: 1,
+  writable: true,
+  enumerable: true,
+  configurable: true
+}
+</code></pre>
+        </section>
+
+
+        <section>
+          <h3>All Object Properties have Descriptors</h3>
+<pre><code class="javascript">const obj2 = {
+  get b() { }
+}
+
+console.log(Object
+  .getOwnPropertyDescriptor(obj2, 'b'))
+
+{
+  get: Function,
+  set: undefined,
+  enumerable: true,
+  configurable: true
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>All Object Properties have Descriptors</h3>
+<pre><code class="javascript">const obj3 = Object.defineProperty({}, 'c', {
+  value: 'xyz'
+})
+
+console.log(Object
+  .getOwnPropertyDescriptor(obj3, 'c'))
+
+{
+  value: 'xyz',
+  writable: false,
+  enumerable: false,
+  configurable: false
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h2>Sealing, Extension, Freezing</h2>
+        </section>
+
+
+        <section>
+          <h3>Sealing Objects</h3>
+<pre><code class="javascript">const obj = { p: 'hi' }
+Object.seal(obj)
+obj.p = 'bye' // OK
+delete obj.p // disallowed
+obj.p2 = 'new' // disallowed
+console.log(obj) // { p: "bye" }
+console.log(Object.isSealed(obj)) // true
+console.log(Object.getOwnPropertyDescriptor(obj, 'p'))
+// { value: "bye", writable: true,
+//   enumerable: true, configurable: false }
+</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Preventing Object Extension</h3>
+<pre><code class="javascript">const obj = { p: 'bar' }
+Object.preventExtensions(obj)
+
+obj.x = true // fails silently
+obj.p = 'bop' // OK
+console.log(obj) // { p: "bar" }
+console.log(Object.isExtensible(obj)) // false
+console.log(Object.getOwnPropertyDescriptor(obj, 'p'))
+// { value: "bop", writable: true,
+//   enumerable: true, configurable: true }
+Object.defineProperty(obj, 'new', { value: 1 })
+// ^ TypeError</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Freezing Objects</h3>
+<pre><code class="javascript">const obj = { p: 'orig' }
+Object.freeze(obj)
+
+console.log(Object.isFrozen(obj)) // true
+obj.p = 'new' // fail silently, throw in strict
+delete obj.p // fail silently, throw in strict
+obj.x = 1 // fail silently, throw in strict
+
+console.log(obj) // { p: 'orig' }
+console.log(Object.getOwnPropertyDescriptor(obj, 'p'))
+// { value: "orig", writable: false,
+//   enumerable: true, configurable: false }</code></pre>
+        </section>
+
+
+        <section>
+          <h2>Proxies</h2>
+          <p>A Proxy is an object which lets you provide callable "trap" methods which are called when interacting with the object in various ways.</p>
+<pre><code class="javascript">const proxy = new Proxy(target, handler)</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Get Proxy Trap</h3>
+<pre><code class="javascript">const orig = { p: 7 }
+const handler = {
+  get: (target, prop, receiver) =&gt; {
+    return target[prop] ? target[prop] + 1 : Infinity
+  }
+}
+const proxy = new Proxy(orig, handler)
+
+console.log(orig.p) // 7
+console.log(orig.r) // undefined
+console.log(proxy.p) // 8
+console.log(proxy.r) // Infinity</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Has Proxy Trap</h3>
+<pre><code class="javascript">const orig = { p: 7 }
+const handler = {
+  has: (target, prop) =&gt; {
+    return false
+  }
+}
+const proxy = new Proxy(orig, handler)
+console.log('p' in orig) // true
+console.log('r' in orig) // false
+console.log('p' in proxy) // false
+console.log(Reflect.has(proxy, 'p')) // false
+console.log(proxy.p) // 7</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Set Proxy Trap</h3>
+<pre><code class="javascript">const orig = {}
+const handler = {
+  set: (target, prop, value, receiver) =&gt; {
+    target[prop.toUpperCase()] = String(value)
+  }
+}
+const proxy = new Proxy(orig, handler)
+
+orig.p = 1
+console.log(orig) // { p: 1 }
+proxy.hello = 1
+console.log(orig) // { p: 1, HELLO: '1' }</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Delete Proxy Trap</h3>
+<pre><code class="javascript">const obj = { p: 1, r: 2 }
+const handler = {
+  deleteProperty: (target, prop) =&gt; {
+    if (prop === 'r') delete target[prop]
+    return true // falsey will throw in strict
+  }
+}
+const proxy = new Proxy(obj, handler)
+delete proxy.p
+delete proxy.r
+console.log(proxy) // { p: 2 }</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Object Keys Proxy Trap</h3>
+<pre><code class="javascript">const sym = Symbol()
+const orig = { p: 1, r: 2, [sym]: 3 }
+const handler = {
+  ownKeys: (target) =&gt; ["p", sym]
+}
+const proxy = new Proxy(orig, handler)
+console.log(Object.keys(proxy)) // ["p"]
+console.log(Reflect.ownKeys(proxy)) // ["p",Symbol()]
+console.log(Object
+  .getOwnPropertyNames(proxy)) // ["p"]
+console.log(Object
+  .getOwnPropertySymbols(proxy)) // [Symbol()]</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Apply Proxy Trap</h3>
+<pre><code class="javascript">function orig(msg) {
+  return `Hello, ${msg}!`
+}
+
+const handler = {
+  apply: (target, self, args) =&gt; {
+    return target(String(args[0]).toUpperCase())
+  }
+}
+
+const proxy = new Proxy(orig, handler)
+console.log(proxy('world')) // "Hello, WORLD!"</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Construct Proxy Trap</h3>
+<pre><code class="javascript">class Original {
+  constructor(arg) {
+    this.value = `Hello, ${arg}!`
+  }
+}
+
+const handler = {
+  construct(target, args) {
+    return new target(...args)
+  }
+}
+
+const proxy = new Proxy(Original, handler)
+console.log(new proxy('Tom').value) // 'Hello, Tom!'</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Get/Set Prototype Proxy Traps</h3>
+<pre><code class="javascript">const orig = {}
+const handler = {
+  getPrototypeOf: (target) =&gt; null,
+  setPrototypeOf: (target, proto) =&gt; {
+    throw new Error('no way')
+  }
+}
+const proxy = new Proxy(orig, handler)
+
+console.log(orig.__proto__) // {}
+console.log(proxy.__proto__) // null
+console.log(Object.getPrototypeOf(proxy)) // null
+console.log(Reflect.getPrototypeOf(proxy)) // null
+proxy.__proto__ = {} // Error: no way</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Extensibility Proxy Traps</h3>
+<pre><code class="javascript">const orig = {}
+const handler = {
+  preventExtensions: (target) =&gt;
+    Object.preventExtensions(target),
+  isExtensible: (target) =&gt;
+    Reflect.isExtensible(target)
+}
+const proxy = new Proxy(orig, handler)
+console.log(Object.isExtensible(proxy)) // true
+Object.preventExtensions(proxy)
+console.log(Object.isExtensible(proxy)) // false
+// Note: Can't lie, otherwise will throw Error</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Property Descriptors Proxy Traps</h3>
+<pre><code class="javascript">const proxy = new Proxy({}, {
+  defineProperty: (target, prop, desc) =&gt; {
+    if (desc.value === 42)
+      Object.defineProperty(target, prop, desc)
+    return true
+  },
+  getOwnPropertyDescriptor: (tgt, prp) =&gt; {
+    return Object.getOwnPropertyDescriptor(tgt, prp)
+  }
+})
+Object.defineProperty(proxy, 'p', { value: 42 })
+Object.defineProperty(proxy, 'r', { value: 43 })
+console.log(proxy.p, proxy.r) // 42, undefined</code></pre>
+        </section>
+
+
+        <section>
+          <h2>Proxies + Property Descriptors</h2>
+        </section>
+
+
+        <section>
+          <h3>Double Getter Fun</h3>
+<pre><code class="javascript">const orig = {}
+Object.defineProperty(orig, 'name', {
+  get: () =&gt; {
+    console.log('2. prop desc get'); return 'Thomas'
+  }
+})
+const proxy = new Proxy(orig, {
+  get: (target, prop) =&gt; {
+    console.log('1. proxy get'); return target[prop]
+  }
+})
+console.log(`3. ${proxy.name}`) // 1. proxy get
+                                // 2. prop desc get
+                                // 3. Thomas</code></pre>
+        </section>
+
+
+        <section>
+          <h2>Fin</h2>
+          <ul>
+            <li>Follow me: <a href="https://twitter.com/tlhunter">@tlhunter</a></li>
+            <li>Secure your Node.js Services:<br /><a href="https://www.intrinsic.com" class="bitly">intrinsic.com</a></li>
+          </ul>
+        </section>
+
+
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      Reveal.initialize({
+        dependencies: [
+          { src: 'plugin/markdown/marked.js' },
+          { src: 'plugin/markdown/markdown.js' },
+          { src: 'plugin/notes/notes.js', async: true },
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        ]
+      });
+    </script>
+  </body>
+</html>

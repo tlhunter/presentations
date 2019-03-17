@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Node, Redis, and You!</title>
+    <link rel="stylesheet" href="./reveal.js-3.2.0/css/reveal.css" />
+    <link rel="stylesheet" href="./reveal.js-3.2.0/css/theme/night.css" id="theme" />
+    <link rel="stylesheet" href="./zenburn.css" />
+    <style>
+      .reveal .slides {
+        text-align: left;
+      }
+      .reveal pre {
+        box-shadow: none;
+        margin: 20px 0;
+        border-top: 1px solid #666;
+        border-bottom: 1px solid #666;
+        background-color: #000;
+        width: auto;
+      }
+      .reveal pre code {
+        line-height: 1.2em;
+        max-height: none;
+      }
+      .reveal .hljs {
+        background-color: transparent;
+      }
+      .reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6.reveal a {
+        text-transform: none;
+        color: #79b165;
+      }
+      .reveal a, .reveal strong {
+        color: #d82c20;
+      }
+      .reveal section img {
+        border: 0px;
+        background-color: transparent;
+        margin: 0px;
+        box-shadow: none;
+      }
+      .reveal .progress span {
+        background: #d82c20;
+      }
+      .reveal .controls .navigate-left, .reveal .controls .navigate-left.enabled {
+        border-right-color: #d82c20;
+      }
+      .reveal .controls .navigate-right, .reveal .controls .navigate-right.enabled {
+        border-left-color: #d82c20;
+      }
+      .reveal .navigate-up,
+      .reveal .controls .navigate-down {
+        display: none;
+      }
+      .logos {
+        text-align: center;
+      }
+      .logos .logo {
+        margin: 0 20px;
+        display: inline-block;
+      }
+      .reveal h2 + h3 {
+        color: #d82c20;
+      }
+      .highlight-green {
+        color: #79b165;
+      }
+      .highlight-red {
+        color: #d82c20;
+      }
+      .reveal .monospace {
+        font-family: monospace;
+      }
+      .reveal li code {
+        background-color: #000;
+        color: #79b165;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h2>Node, Redis, and You!</h2>
+          <div class="logos">
+            <span class="logo"><img src="images/node-logo.png" /></span>
+            <span class="logo"><img src="images/redis-logo.png" /></span>
+          </div>
+          <p>Presented by <a href="https://twitter.com/tlhunter">@tlhunter</a></p>
+          <p>I'm writing a book on Microservices: <a href="http://bit.ly/2hlATo2" class="monospace">bit.ly/2hlATo2</a></p>
+        </section>
+
+        <section>
+          <h2>Beginner Use Case:</h2>
+          <h3>Website Visitor Counter</h2>
+        </section>
+
+        <section>
+          <h3>Simple Visitor Counter</h3>
+
+          <ul>
+            <li>Naïve approach: I can simply keep data in Node memory!</li>
+          </ul>
+
+          <pre><code class="javascript">const http = require('http');
+
+let counter = 0;
+http.createServer((req, res) =&gt; {
+  res.end(JSON.stringify({counter: ++counter, pid: process.pid}));
+}).listen(9999);</code></pre>
+
+          <ul>
+            <li>Counter happily increments every request:</li>
+          </ul>
+
+          <pre><code class="bash">$ curl http://localhost:9999
+{"counter":1,"pid":20000}
+$ curl http://localhost:9999
+{"counter":2,"pid":20000}
+$ curl http://localhost:9999
+{"counter":3,"pid":20000}</code></pre>
+
+          <ul>
+            <li>Life is perfect, what could ever possibly go wrong?</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Visitor Counter with Cluster</h3>
+
+          <ul>
+            <li>What happens when we want to scale to many processes?</li>
+          </ul>
+
+          <pre><code class="javascript">const cluster = require('cluster');
+const http = require('http');
+
+if (cluster.isMaster) {
+  cluster.fork(); cluster.fork();
+} else {
+  let counter = 0;
+  http.createServer((req, res) =&gt; {
+    res.end(JSON.stringify({counter: ++counter, pid: process.pid}));
+  }).listen(9999);
+}</code></pre>
+
+          <ul>
+            <li>Oh No! Two sets of data! What can we do to fix it?!</li>
+          </ul>
+
+          <pre><code class="bash">$ curl http://localhost:9999
+{"counter":1,"pid":20001}
+$ curl http://localhost:9999
+{"counter":1,"pid":20002}
+$ curl http://localhost:9999
+{"counter":2,"pid":20001}</code></pre>
+
+          <ul>
+            <li>But first, let's learn a little more about Redis.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Introduction to Redis</h3>
+          <ul>
+            <li>In-Memory Key/Value store with several data structure types</li>
+            <li>Create if not exist, destroy if empty philosophy</li>
+            <li>Much like Node, Redis is single-threaded</li>
+            <li>Communication is simple, could telnet and run commands</li>
+            <li>Authentication is disabled by default, bind on local interface</li>
+            <li>Can set per-key expiry, or use global Least Recently Used (LRU)</li>
+          </ul>
+          <pre><code class="bash">$ brew install redis # sudo apt-get install redis
+$ redis-cli
+127.0.0.1:6379> SET xyz 'Hello'
+OK
+127.0.0.1:6379> GET xyz
+"Hello"
+127.0.0.1:6379> DEL xyz
+(integer) 1
+127.0.0.1:6379> GET xyz
+(nil)
+127.0.0.1:6379> QUIT</code></pre>
+        </section>
+
+        <section>
+          <h3>Redis Data Structures</h3>
+            <ul>
+              <li><strong>Strings</strong> - Simple key/value pair
+                <ul>
+                  <li>Can Increment/Decrement numeric strings</li>
+                </ul>
+              </li>
+              <li><strong>Lists</strong> - Ordered list of data (Linked List)
+                <ul>
+                  <li>Push, Pop, Shift, Unshift, similar to JavaScript Array</li>
+                </ul>
+              </li>
+              <li><strong>Hashes</strong> - Field/Value pairs within a single Redis key
+                <ul>
+                  <li>Set/Get fields, similar to a JavaScript objects</li>
+                </ul>
+              </li>
+              <li><strong>Sets</strong> - Unordered collection of unique strings
+                <ul>
+                  <li>Add/Remove items, similar to JavaScript ES2015 Set</li>
+                </ul>
+              </li>
+              <li><strong>Sorted Sets</strong> - Strings sorted by numeric scores
+                <ul>
+                  <li>Values are unique, query based on ranges</li>
+                </ul>
+              </li>
+              <li><strong>GeoLocation</strong> - Collections of Lat/Lon to String pairs
+                <ul>
+                  <li>Query items based on distance</li>
+                </ul>
+              </li>
+              <li><strong>Pub/Sub</strong> - Broadcast messages to channels</li>
+            </ul>
+        </section>
+
+        <section>
+          <h3>Using Redis with Node</h3>
+
+          <ul>
+            <li>Install Redis NPM module:</li>
+          </ul>
+
+          <pre><code class="bash">$ npm install --save redis</code></pre>
+
+          <ul>
+            <li>Require and call Redis commands:</li>
+          </ul>
+
+          <pre><code class="javascript">const redis = require('redis').createClient();
+
+redis.set('hello', 'world', (err) =&gt; {
+  if (err) { throw err; }
+  redis.get('hello', (err, data) =&gt; {
+    if (err) { throw err; }
+    console.log(`Hello, ${data}!`); // outputs 'Hello, world!'
+    redis.quit();
+  });
+});</code></pre>
+
+          <ul>
+            <li>Commands are queued, no need for connection callback</li>
+            <li>But how can we use Redis to fix our visitor counter?</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Visitor Counter with Redis and Cluster</h3>
+
+          <pre><code class="javascript">const cluster = require('cluster');
+const http = require('http');
+const redis = require('redis').createClient();
+
+if (cluster.isMaster) {
+  cluster.fork(); cluster.fork();
+} else {
+  http.createServer((req, res) =&gt; {
+    redis.incr('counter', (error, data) =&gt; {
+      res.end(JSON.stringify({counter: data, pid: process.pid}));
+    });
+  }).listen(9999);
+}</code></pre>
+
+          <ul>
+            <li>GeoCities would be proud:</li>
+          </ul>
+
+          <pre><code class="bash">$ curl http://localhost:9999
+{"counter":1,"pid":20001}
+$ curl http://localhost:9999
+{"counter":2,"pid":20002}
+$ curl http://localhost:9999
+{"counter":3,"pid":20001}</code></pre>
+        </section>
+
+        <section>
+          <h2>Intermediate Use Case:</h2>
+          <h3>Distributed Job Scheduler</h2>
+        </section>
+
+        <section>
+          <h3>Job Scheduler using Callbacks</h3>
+
+          <ul>
+            <li>Naïve approach: Nest related Redis commands using callbacks</li>
+          </ul>
+
+          <pre><code class="javascript">const redis = require('redis').createClient();
+const JOBS = 'jobs'; // Sorted Set
+
+redis.zadd(JOBS, Date.now() + 5 * 1000, 'email user 1');
+redis.zadd(JOBS, Date.now() + 10 * 1000, 'email user 2');
+
+setInterval(() =&gt; {
+  let now = Date.now();
+  redis.zrangebyscore(JOBS, 0, now, (err, jobList) =&gt; {          // get jobs until now
+    redis.zremrangebyscore(JOBS, 0, now, (err) =&gt; {              // delete jobs until now
+      console.log('jobs', jobList.length ? jobList : 'N/A', process.pid); // perform work
+    });
+  });
+}, 1 * 1000);</code></pre>
+
+          <ul>
+            <li><code>ZRANGEBYSCORE</code>: Get list of jobs scheduled until now</li>
+            <li><code>ZREMRANGEBYSCORE</code>: Delete list of jobs scheduled until now</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Job Scheduler Callback Output</h3>
+
+          <ul>
+            <li>Commands being issued to Redis (tracked via <code>MONITOR</code>)</li>
+          </ul>
+
+<pre>
+<span class="highlight-red">1474247436.153554 [0 127.0.0.1:20000] "zrangebyscore" "jobs" "0" "1474247436153"</span>
+<span class="highlight-red">1474247436.153999 [0 127.0.0.1:20000] "zremrangebyscore" "jobs" "0" "1474247436153"</span>
+<span class="highlight-green">1474247437.155540 [0 127.0.0.1:20001] "zrangebyscore" "jobs" "0" "1474247437155"</span>
+<span class="highlight-green">1474247437.156171 [0 127.0.0.1:20001] "zremrangebyscore" "jobs" "0" "1474247437155"</span>
+<span class="highlight-red">1474247437.157580 [0 127.0.0.1:20000] "zrangebyscore" "jobs" "0" "1474247437157"</span>
+<span class="highlight-red">1474247437.158185 [0 127.0.0.1:20000] "zremrangebyscore" "jobs" "0" "1474247437157"</span>
+<span class="highlight-red">1474247438.161422 [0 127.0.0.1:20000] "zrangebyscore" "jobs" "0" "1474247438160"</span>
+<span class="highlight-green">1474247438.161558 [0 127.0.0.1:20001] "zrangebyscore" "jobs" "0" "1474247438160"</span>
+<span class="highlight-red">1474247438.162285 [0 127.0.0.1:20000] "zremrangebyscore" "jobs" "0" "1474247438160"</span>
+<span class="highlight-green">1474247438.162373 [0 127.0.0.1:20001] "zremrangebyscore" "jobs" "0" "1474247438160"</span>
+<span class="highlight-green">1474247439.164502 [0 127.0.0.1:20001] "zrangebyscore" "jobs" "0" "1474247439164"</span>
+<span class="highlight-green">1474247439.165080 [0 127.0.0.1:20001] "zremrangebyscore" "jobs" "0" "1474247439164"</span>
+</pre>
+
+          <ul>
+            <li>Race Conditions in console output, note the duplicated work!</li>
+          </ul>
+
+<pre>
+<span class="highlight-red">jobs N/A 20000</span>
+<span class="highlight-green">jobs N/A 20001</span>
+<span class="highlight-red">jobs N/A 20000</span>
+<span class="highlight-red">jobs ['email user 1'] 20000</span>
+<span class="highlight-green">jobs ['email user 1'] 20001</span>
+<span class="highlight-green">jobs N/A 20001</span>
+</pre>
+        </section>
+
+        <section>
+          <h3>Job Scheduler using MULTI/EXEC</h3>
+
+          <ul>
+            <li>This time we wrap commands using a <code>MULTI</code> block:</li>
+          </ul>
+
+          <pre><code class="javascript">const redis = require('redis').createClient();
+const JOBS = 'jobs'; // Sorted Set
+
+redis.zadd(JOBS, Date.now() + 5 * 1000, 'email user 1');
+redis.zadd(JOBS, Date.now() + 10 * 1000, 'email user 2');
+
+setInterval(() =&gt; {
+  let now = Date.now();
+  redis.multi()                             // Same concept as a DB transaction
+    .zrangebyscore(JOBS, 0, now)            // get jobs until now
+    .zremrangebyscore(JOBS, 0, now)         // delete jobs until now
+    .exec((error, data) =&gt; {
+      let jobList = data[0];
+      console.log('jobs', jobList.length ? jobList : 'N/A', process.pid); // perform work
+    });
+}, 1 * 1000);</code></pre>
+
+          <ul>
+            <li>Now the two Redis commands will be run atomically</li>
+            <li>No other processes can issue commands in-between</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Job Scheduler MULTI/EXEC Output</h3>
+
+          <ul>
+            <li>Commands being issued to Redis (tracked via <code>MONITOR</code>)</li>
+          </ul>
+
+<pre>
+<span class="highlight-red">1474250213.374094 [0 127.0.0.1:20000] "multi"</span>
+<span class="highlight-red">1474250213.374140 [0 127.0.0.1:20000] "zrangebyscore" "jobs" "0" "1474250213373"</span>
+<span class="highlight-red">1474250213.374174 [0 127.0.0.1:20000] "zremrangebyscore" "jobs" "0" "1474250213373"</span>
+<span class="highlight-red">1474250213.374200 [0 127.0.0.1:20000] "exec"</span>
+<span class="highlight-green">1474250213.377766 [0 127.0.0.1:20001] "multi"</span>
+<span class="highlight-green">1474250213.377821 [0 127.0.0.1:20001] "zrangebyscore" "jobs" "0" "1474250213377"</span>
+<span class="highlight-green">1474250213.377872 [0 127.0.0.1:20001] "zremrangebyscore" "jobs" "0" "1474250213377"</span>
+<span class="highlight-green">1474250213.377899 [0 127.0.0.1:20001] "exec"</span>
+<span class="highlight-red">1474250214.380577 [0 127.0.0.1:20000] "multi"</span>
+<span class="highlight-red">1474250214.380623 [0 127.0.0.1:20000] "zrangebyscore" "jobs" "0" "1474250214380"</span>
+<span class="highlight-red">1474250214.380657 [0 127.0.0.1:20000] "zremrangebyscore" "jobs" "0" "1474250214380"</span>
+<span class="highlight-red">1474250214.380682 [0 127.0.0.1:20000] "exec"</span>
+</pre>
+
+          <ul>
+            <li>Console output, duplicated work is now impossible</li>
+          </ul>
+
+<pre>
+<span class="highlight-red">jobs N/A 20000</span>
+<span class="highlight-green">jobs ['email user 1'] 20001</span>
+<span class="highlight-red">jobs N/A 20000</span>
+</pre>
+        </section>
+
+        <section>
+          <h2>Advanced Use Case:</h2>
+          <h3>GeoLocation City Lookup by Distance</h2>
+        </section>
+
+        <section>
+          <h3>Logic in Redis with SCRIPT/EVALSHA</h3>
+
+          <ul>
+            <li>Unlike <code>MULTI</code>, command output can be used for command input</li>
+            <li><code>SCRIPT LOAD</code> accepts a Lua script and returns the SHA1 hash</li>
+            <li><code>EVALSHA</code> executes a Lua script, accepting hash and arguments</li>
+            <li>Use a library like <a href="https://www.npmjs.com/package/lured" target="_blank">lured</a> to manage scripts, SHA1 hashes</li>
+            <li>Need to specify all affected keys as arguments</li>
+            <li>Think of it as a DB Stored Procedure</li>
+          </ul>
+
+          <pre><code class='lua'>-- get-cities.lua: Find cities within 10km of query
+
+local key_geo = KEYS[1]
+local key_hash = KEYS[2]
+
+local longitude = ARGV[1]
+local latitude = ARGV[2]
+
+local city_ids = redis.call('GEORADIUS', key_geo, longitude, latitude, 10, 'km')
+return redis.call('HMGET', key_hash, unpack(city_ids))</code></pre>
+        </section>
+
+        <section>
+          <h3>Logic in Redis with SCRIPT/EVALSHA</h3>
+
+          <pre><code class="javascript">const redis = require('redis').createClient();
+const fs = require('fs');
+const GEO = 'geo-city-locations', HASH = 'hash-city-data';
+let lua = {
+  find: {
+    script: fs.readFileSync(`${__dirname}/get-cities.lua`, {encoding: 'utf8'})
+  }
+};
+const lured = require('lured').create(redis, lua);
+
+redis.geoadd(GEO, -122.419103, 37.777068, 'san-francisco');
+redis.hset(HASH, 'san-francisco', JSON.stringify({name: 'San Francisco', temp: 65}));
+
+redis.geoadd(GEO, -122.272938, 37.807235, 'oakland');
+redis.hset(HASH, 'oakland', JSON.stringify({name: 'Oakland', temp: 72}));
+
+const BERKELEY = {lon: -122.273412, lat: 37.869103};
+lured.load((err) =&gt; {
+  redis.evalsha(lua.find.sha, 2, GEO, HASH, BERKELEY.lon, BERKELEY.lat, (e, data) =&gt; {
+    console.log('cities near Berkeley', data.map(JSON.parse));
+    // [ {name:"Oakland",temp:72} ]
+  });
+});</code></pre>
+        </section>
+
+        <section>
+          <h3>Conclusion</h3>
+
+          <ol>
+            <li>Redis offers several useful data structures</li>
+            <li>Keep state synchronized across multiple Node processes</li>
+            <li>Use <code>MULTI</code>/<code>EXEC</code> for independent atomic operations</li>
+            <li>Use <code>SCRIPT</code>/<code>EVALSHA</code> for chainable atomic operation</li>
+          </ol>
+
+          <p>Follow me at <a href="https://twitter.com/tlhunter">@tlhunter</a></p>
+          <p>Advanced Microservices Book: <a href="http://bit.ly/2hlATo2" class="monospace">bit.ly/2hlATo2</a></p>
+        </section>
+      </div>
+    </div>
+
+    <script src="./reveal.js-3.2.0/lib/js/head.min.js"></script>
+    <script src="./reveal.js-3.2.0/js/reveal.js"></script>
+
+    <script>
+      Reveal.initialize({
+        center: true,
+        history: true,
+        transition: 'convex',
+        dependencies: [
+          {
+            src: './reveal.js-3.2.0/plugin/highlight/highlight.js',
+            async: true,
+            callback: function() {
+              hljs.initHighlightingOnLoad();
+            }
+          }
+        ]
+      });
+    </script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-30905176-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

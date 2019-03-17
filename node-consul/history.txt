@@ -1,0 +1,11 @@
+c419699f1fd7b85c5534b9a89ad574647ce5070e 2017-03-02T15:32:52-08:00 "Thomas Hunter II <thunter@opentable.com>" | simplifying example code
+668540e3e8a2186448ae32b8f8ebe32cf1a351fe 2016-12-30T12:31:02-08:00 "Thomas Hunter II <me@thomashunter.name>" | link to view presentation
+856f7ec8cdd245f88091acc39617f1e48e480bbc 2016-12-30T12:30:17-08:00 "Thomas Hunter II <me@thomashunter.name>" | title
+651e5ffb6aef079e1e574a932885e9e6c06b7e41 2016-12-30T12:29:31-08:00 "Thomas Hunter II <me@thomashunter.name>" | abstract and bio
+f05390a10f9ddc2d94bbae55d13b4bf395686e4e 2016-12-29T15:17:38-08:00 "Thomas Hunter II <me@thomashunter.name>" | read me
+28afdc5d97f44814f95fe4abb0a1cfd8b8bef156 2016-12-29T15:16:39-08:00 "Thomas Hunter II <me@thomashunter.name>" | removing redundant slide, fixing diagram
+fe23ebfffa62ce8154bd9cdf316ae74d2e7b7995 2016-12-29T14:39:16-08:00 "Thomas Hunter II <me@thomashunter.name>" | syntax color
+36fb8e5110d5d10b25e4ebd531ba68cbdbfb05d5 2016-12-29T14:28:22-08:00 "Thomas Hunter II <me@thomashunter.name>" | content complete
+3b25b4b6e29e3e722dacb90c2b76f6d5809fd0ac 2016-12-29T13:22:56-08:00 "Thomas Hunter II <me@thomashunter.name>" | wip
+b28c40a6eacce10e39cf1e1da75cd0a62bdf3041 2016-12-29T00:34:02-08:00 "Thomas Hunter II <me@thomashunter.name>" | notes
+73cb7a632467946bfb8b0662292aa3bd1b2675d0 2016-12-28T23:40:24-08:00 "Thomas Hunter II <me@thomashunter.name>" | init

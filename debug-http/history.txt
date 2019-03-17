@@ -1,0 +1,7 @@
+9b9f146da058375bc1354da8cbb0c08a8974a79f 2017-03-12T22:11:55-07:00 "Thomas Hunter II <me@thomashunter.name>" | Better Installation Instructions
+ace132058fde3e4c3c05811afc3dfdb64a3e82cb 2017-02-19T20:12:45-08:00 "Thomas Hunter II <me@thomashunter.name>" | change word
+77810c22e81adae377d3bee9668725864bf25051 2017-02-19T20:01:43-08:00 "Thomas Hunter II <me@thomashunter.name>" | fixing typo
+5d2de6a382d1a3db3654ea05a68c8c4ee1858dbe 2017-02-18T15:33:31-08:00 "Thomas Hunter II <me@thomashunter.name>" | update readme, title
+7b884c131f684953a2cd06da7dea186b920bdf39 2017-02-18T15:18:25-08:00 "Thomas Hunter II <me@thomashunter.name>" | content complete
+3e645c8a2b2db7d22830d8649375a28d5d4d239f 2017-02-18T12:35:28-08:00 "Thomas Hunter II <me@thomashunter.name>" | wip
+21e69ba3deab231cbbb186996497dee92965939a 2017-02-18T00:15:59-08:00 "Thomas Hunter II <me@thomashunter.name>" | init

@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Service Discovery with Node.js and Consul</title>
+    <link rel="stylesheet" href="./reveal.js-3.2.0/css/reveal.css" />
+    <link rel="stylesheet" href="./reveal.js-3.2.0/css/theme/night.css" id="theme" />
+    <link rel="stylesheet" href="./solarized-light.css" />
+    <style>
+      body {
+        background-color: #FFFFFF;
+      }
+      .reveal {
+        color: #000000;
+      }
+      .reveal .slides {
+        text-align: left;
+      }
+      .reveal pre {
+        box-shadow: none;
+        margin: 20px 0;
+        background-color: #fdf6e3;
+        width: auto;
+      }
+      .reveal pre code {
+        line-height: 1.2em;
+        max-height: none;
+      }
+      .reveal .hljs {
+        background-color: transparent;
+      }
+      .reveal h1, .reveal h2, .reveal h3, .reveal h4, .reveal h5, .reveal h6.reveal a {
+        text-transform: none;
+        color: #FF9800;
+      }
+      .reveal a {
+        color: #FF9800;
+      }
+      .reveal strong {
+        color: #263248;
+      }
+      .reveal section img {
+        border: 0px;
+        background-color: transparent;
+        margin: 40px 0px;
+        box-shadow: none;
+      }
+      .reveal .progress {
+        background-color: #000000;
+      }
+      .reveal .progress span {
+        background: #FF9800;
+      }
+      .reveal .controls .navigate-left, .reveal .controls .navigate-left.enabled {
+        border-right-color: #263248;
+      }
+      .reveal .controls .navigate-right, .reveal .controls .navigate-right.enabled {
+        border-left-color: #263248;
+      }
+      .reveal .navigate-up,
+      .reveal .controls .navigate-down {
+        display: none;
+      }
+      .logos {
+        text-align: center;
+      }
+      .logos .logo {
+        margin: 0 20px;
+        display: inline-block;
+      }
+      .reveal h2 + h3 {
+        margin-top: -20px;
+      }
+      .reveal h2 + h3, .reveal h4 {
+        color: #263248;
+      }
+      .highlight-green {
+        color: #FF9800;
+      }
+      .highlight-red {
+        color: #263248;
+      }
+      .reveal a.bitly {
+        font-family: monospace;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section>
+          <h2>Service Discovery</h2>
+          <h3>With Node.js and Consul</h3>
+
+          <p>
+            Presented by <a href="https://twitter.com/tlhunter">@tlhunter</a>
+          </p>
+          <p>
+            Based on content from my upcoming microservices book:<br />
+            <a class="bitly" href="http://bit.ly/2hlATo2">bit.ly/2hlATo2</a>
+          </p>
+        </section>
+
+        <section>
+          <h3>Naive Approach: Static Host Lookups</h3>
+
+          <center>
+            <img src="images/simple-node.svg" width="50%" />
+          </center>
+
+          <ul>
+            <li>Provider (Data Service)</li>
+            <li>Consumer (Web Service)</li>
+            <li>Fine for finite number of services</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Naive Approach: Static Host Lookups</h3>
+
+          <h4>haproxy.cfg</h4>
+
+          <pre><code>frontend http-in
+  bind 0.0.0.0:80
+  default_backend www
+backend www
+  server www1 www.example.org:80</code></pre>
+
+          <h4>service-www.js</h4>
+
+          <pre><code class="javascript">const request = require('request');
+
+request.get('http://data.example.org:80', (err, data) =&gt; {
+  doStuff(data);
+});</code></pre>
+        </section>
+
+        <section>
+          <h3>Shortcomings</h3>
+
+          <ul>
+            <li>Single Points of Failure (in particular code that we own)</li>
+            <li>Unable to scale services dynamically</li>
+            <li>Even with Node Cluster, master dies, app dies</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>What is Consul?</h3>
+
+          <ul>
+            <li>Open-Source Discovery tool, written by Hashicorp</li>
+            <li>Raft protocol, Quorum, Leader Election (3 or 5 members)</li>
+            <li>Keeps list of service instances, <strong>name -&gt; host:port</strong></li>
+            <li>Exposes a RESTful API, plenty of client libraries</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Register and Discover Hosts</h3>
+
+          <center>
+            <img src="images/medium-node.svg" width="66%" />
+          </center>
+
+          <ul>
+            <li>Data Service registers its locations to Consul</li>
+            <li>Data Service Heartbeats tell Consul they're alive</li>
+            <li>Web Service is told where Data is located</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Register and Discover Hosts</h3>
+
+          <h4>service-data.js</h4>
+
+          <ul>
+            <li>Data Service Register when it is created</li>
+          </ul>
+
+          <pre><code class="javascript">const CONSUL_ID = require('uuid').v4();
+let details = {
+  name: 'data',
+  address: HOST,
+  port: PORT,
+  id: CONSUL_ID,
+  check: {
+    ttl: '10s',
+    deregister_critical_service_after: '1m'
+  }
+};
+consul.agent.service.register(details, err =&gt; {
+  // schedule heartbeat
+}); </code></pre>
+
+        </section>
+
+        <section>
+          <h3>Register and Discover Hosts</h3>
+
+          <h4>service-data.js</h4>
+
+          <ul>
+            <li>Data Service Heartbeat runs every 10/2 seconds</li>
+          </ul>
+
+          <pre><code class="javscript">setInterval(() =&gt; {
+  consul.agent.check.pass({id:`service:${CONSUL_ID}`}, err =&gt; {
+    if (err) throw new Error(err);
+    console.log('told Consul that we are healthy');
+  });
+}, 5 * 1000);</code></pre>
+        </section>
+
+        <section>
+          <h3>Register and Discover Hosts</h3>
+
+          <h4>service-data.js</h4>
+          <ul>
+            <li>Data Service De-Register when it is (gracefully) destroyed</li>
+          </ul>
+
+          <pre><code class="javscript">process.on('SIGINT', () =&gt; {
+  console.log('SIGINT. De-Registering...');
+  let details = {id: CONSUL_ID};
+
+  consul.agent.service.deregister(details, (err) =&gt; {
+    console.log('de-registered.', err);
+    process.exit();
+  });
+});</code></pre>
+        </section>
+
+        <section>
+          <h3>Register and Discover Hosts</h3>
+
+          <h4>service-www.js</h4>
+          <ul>
+            <li>Web keeps track of changes to Data</li>
+          </ul>
+
+          <pre><code class="javscript">let known_data_instances = [];
+
+const watcher = consul.watch({
+  method: consul.health.service,
+  options: {
+    service: 'data',
+    passing: true
+  }
+});
+
+watcher.on('change', data =&gt; {
+  known_data_instances = [];
+  data.forEach(entry =&gt; {
+    known_data_instances.push(`http://${entry.Service.Address}:${entry.Service.Port}/`);
+  });
+});</code></pre>
+        </section>
+
+        <section>
+          <h3>Register and Discover Hosts</h3>
+
+          <h4>service-www.js</h4>
+          <ul>
+            <li>Web Service looks for a random Data Service</li>
+          </ul>
+
+          <pre><code class="javscript">function getData(cb) {
+  let url = known_data_instances[Math.floor(Math.random()*known_data_instances.length)];
+
+  request(url, {json:true}, (err, res, data) =&gt; {
+    if (err) return cb(err);
+
+    cb(null, data);
+  });
+}</code></pre>
+        </section>
+
+        <section>
+          <h3>Reconigure HAProxy with Consul Template</h3>
+
+          <center>
+            <img src="images/complex-node.svg" width="66%" />
+          </center>
+
+          <ul>
+            <li>Web Service now announces like Data Service</li>
+            <li>Consul Template dynamically reconfigures HAProxy</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Reconigure HAProxy with Consul Template</h3>
+
+          <h4>haproxy.cfg.template</h4>
+
+          <ul>
+            <li>Uses the HCL "Hashicorp Configuration Language"</li>
+          </ul>
+
+          <pre><code>frontend http-in
+  bind 0.0.0.0:80
+  default_backend www
+backend www{{range service "www"}}
+  server {{.ID}} {{.Address}}:{{.Port}}{{end}}</code></pre>
+        </section>
+
+        <section>
+          <h3>Reconigure HAProxy with Consul Template</h3>
+
+          <ul>
+            <li>Configure Consul Template how to restart HAProxy</li>
+            <li>Rebuilds advanced.cfg and restarts (if needed)</li>
+          </ul>
+
+          <pre><code class="bash">$ consul-template -template "./advanced.cfg.template:./advanced.cfg:./haproxy-restart.sh"</code></pre>
+
+          <h4>haproxy-restart.sh</h4>
+
+          <ul>
+            <li>HAProxy restarts while handing off old port</li>
+          </ul>
+
+          <pre><code class="bash">#!/bin/bash
+
+echo "DEBUG: restarting haproxy"
+
+haproxy -f ./advanced.cfg -p ./haproxy.pid -D -st $(cat ./haproxy.pid)</code></pre>
+        </section>
+
+        <section>
+          <h3>Benefits</h3>
+
+          <ul>
+            <li>No single point of failure in our service code
+              <ul>
+                <li>Though, HAProxy is a single point of failure</li>
+                <li>However it's popular and stable</li>
+              </ul>
+            </li>
+            <li>Easily run code on many different hosts</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Drawbacks</h3>
+
+          <ul>
+            <li>Chatter: Processes need continuous heartbeats</li>
+            <li>Bad routing can happen up to 10 seconds after process death</li>
+            <li>There is more complexity in each process</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Fin</h3>
+
+          <ul>
+            <li>Complete working example:
+              <ul>
+                <li><a href="https://github.com/tlhunter/consul-haproxy-example">github.com/tlhunter/consul-haproxy-example</a></li>
+              </ul>
+            </li>
+            <li>Everything is Open Source:
+              <ul>
+                <li>HAProxy: <a href="http://haproxy.org">haproxy.org</a></li>
+                <li>Consul: <a href="http://consul.io">consul.io</a></li>
+                <li>Consul Template: <a href="https://github.com/hashicorp/consul-template">github.com/hashicorp/consul-template</a></li>
+              </ul>
+            </li>
+            <li>I'm writing a book on Microservices!
+              <ul>
+                <li><a class="bitly" href="http://bit.ly/2hlATo2">bit.ly/2hlATo2</a></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+      </div>
+    </div>
+
+    <script src="./reveal.js-3.2.0/lib/js/head.min.js"></script>
+    <script src="./reveal.js-3.2.0/js/reveal.js"></script>
+
+    <script>
+      Reveal.initialize({
+        center: true,
+        history: true,
+        transition: 'convex',
+        dependencies: [
+          {
+            src: './reveal.js-3.2.0/plugin/highlight/highlight.js',
+            async: true,
+            callback: function() {
+              hljs.initHighlightingOnLoad();
+            }
+          }
+        ]
+      });
+    </script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-30905176-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </body>
+</html>

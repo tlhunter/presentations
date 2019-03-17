@@ -1,0 +1,12 @@
+b2c5ce7cce7f58bf22bed3dd1d5cccc160ffc50e 2017-09-14T14:15:46-07:00 "Thomas Hunter II <thunter@opentable.com>" | jump to section
+6ae178ffd94917ef2d11a08f82743eae33ba36a0 2017-06-30T07:29:40+02:00 "Thomas Hunter II <me@thomashunter.name>" | synopsys
+532efdd88cd59a2b0b5a91ea62aaffdc24905b25 2017-06-15T23:29:30-04:00 "Thomas Hunter II <me@thomashunter.name>" | visual tweaks
+ee1f2969be79e7d57dfaaf10d55f0543b3707f5b 2017-06-15T23:00:52-04:00 "Thomas Hunter II <me@thomashunter.name>" | bugs from readthrough
+bcc50149c2efe99c93f6b8871413ac77a767adaa 2017-06-15T21:30:37-04:00 "Thomas Hunter II <me@thomashunter.name>" | remove annoying default reveal.js image border
+37bc9c3e8607ca7726afd415cef0b2261b9cc2cb 2017-06-15T20:56:19-04:00 "Thomas Hunter II <me@thomashunter.name>" | content complete
+7a6ac1b6a50cdee9513eafc1373814c68fce8f4a 2017-06-15T19:57:29-04:00 "Thomas Hunter II <me@thomashunter.name>" | body section complete
+4167c058c524fee83896db6104be716f6f93ac6a 2017-06-15T00:58:30-04:00 "Thomas Hunter II <me@thomashunter.name>" | book thumbnail, cleanup
+befcb66be144e3be9eb68b3e8ded9759f2ffc4c7 2017-06-15T00:22:48-04:00 "Thomas Hunter II <me@thomashunter.name>" | tons o content
+0ec15acd50a32b3bbe9b1c2f00811d2a607e4a33 2017-06-14T16:55:32-04:00 "Thomas Hunter II <me@thomashunter.name>" | Content skeleton
+1babb47ec6833464103e0d94ffde2188562d595e 2017-06-14T16:55:18-04:00 "Thomas Hunter II <me@thomashunter.name>" | Reveal.js 3.5.0
+0bb18c15fc1396d66d5ad5bd3b752cdf0fdb0ad5 2017-06-14T15:53:24-04:00 "Thomas Hunter II <me@thomashunter.name>" | init

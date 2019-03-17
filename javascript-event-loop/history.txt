@@ -1,0 +1,24 @@
+710c5ef7c120b5cc32e23c1e6d4116827cbb2943 2017-06-09T15:04:31-04:00 "Thomas Hunter II <me@thomashunter.name>" | node load balancing example
+85b92e287328fa1205f8e2bf58cb899ff7f36d83 2017-06-09T13:00:59-04:00 "Thomas Hunter II <me@thomashunter.name>" | can can
+23cb92a12425716f285ace7a2db866bd8a4aa7e6 2017-06-09T12:55:32-04:00 "Thomas Hunter II <me@thomashunter.name>" | tweaks
+83caf0eb774a3eedbfe2277bcc45acec0fd5e2c3 2017-06-09T12:43:34-04:00 "Thomas Hunter II <me@thomashunter.name>" | interview console log now interactive
+126dd75977f5ab239a8b61e8f623e0ebe2f692f3 2017-06-09T12:19:22-04:00 "Thomas Hunter II <me@thomashunter.name>" | such revamp
+f25937d1fac839112643c4c9068fb389a658d976 2017-06-08T19:14:54-04:00 "Thomas Hunter II <me@thomashunter.name>" | unlocking old slides, book cover
+0ed9556bbd14f84e10279eb77cfc223ab82fe78d 2017-02-11T14:11:30-08:00 "Thomas Hunter II <me@thomashunter.name>" | whoops
+eca5e06f8afcce01e0cb6717617ec82c11812182 2017-02-11T14:08:28-08:00 "Thomas Hunter II <me@thomashunter.name>" | Stack/Queue/Heap animation, interactivity
+19dc82b14f05e1c5c511740e71081af0721ea8a0 2017-01-16T20:25:10-08:00 "Thomas Hunter II <me@thomashunter.name>" | MS book link
+4a9fe9acb9507aca317c5e5b4a23db43e9288345 2016-03-07T15:23:27-08:00 "Thomas Hunter II <thunter@opentable.com>" | more notes
+e8c79e4cc116d0b474ce00a1da2090ca290274e6 2016-03-06T23:26:10-08:00 "Thomas Hunter II <me@thomashunter.name>" | clarification
+4f7debd7d7902241c305b725b30adc4b8d88f982 2016-03-06T21:39:39-08:00 "Thomas Hunter II <me@thomashunter.name>" | v3 link
+907858af8dde5a9e68af475c7a4a1067f634c3a3 2016-03-06T21:32:10-08:00 "Thomas Hunter II <me@thomashunter.name>" | changing conclusion to match new content
+180088b1d78ab4eff7dcfcd07831b14db76c50ef 2016-03-06T20:34:50-08:00 "Thomas Hunter II <me@thomashunter.name>" | tweaking new graphs, cutting out more fatty slides
+ea7897f6648b71c58005ac5ef8699b1e4b60e65f 2016-03-06T19:51:13-08:00 "Thomas Hunter II <me@thomashunter.name>" | practical examples
+285c83ce1b1bca8e99598427ba3519be59e2b804 2016-02-03T00:35:25-08:00 "Thomas Hunter II <me@thomashunter.name>" | analytics
+9cc81b07a262e444d79f6be113dbc8a9877e2ff5 2016-02-02T16:46:40-08:00 "Thomas Hunter II <thunter@opentable.com>" | feedback from duereg
+59f3de3f367a7036a2ac0b15fdc4cbe76f3b3513 2016-02-02T15:59:26-08:00 "Thomas Hunter II <thunter@opentable.com>" | updates
+a14dc49b1376d183f1467da0b8453dce219d90d5 2016-02-02T13:53:14-08:00 "Thomas Hunter II <thunter@opentable.com>" | animating code stepping
+4e85b0f30588e21a547c3ec62c4dceede9e0a539 2016-02-02T01:02:57-08:00 "Thomas Hunter II <me@thomashunter.name>" | tmif
+5a57730808cbb82480b7d392aadc61e37ae1b1f3 2016-02-02T00:55:44-08:00 "Thomas Hunter II <me@thomashunter.name>" | finishing touches
+d3344f0a4659168c7391e23e9db8d32e4d40f91c 2016-02-01T23:37:23-08:00 "Thomas Hunter II <me@thomashunter.name>" | mozilla diagram
+437f847c94d469417060d7c011d2328c1dd661b2 2016-02-01T23:03:18-08:00 "Thomas Hunter II <me@thomashunter.name>" | wip
+0c9572e4949d3349f65f8794cebf82f19f7de52a 2016-02-01T22:53:27-08:00 "Thomas Hunter II <me@thomashunter.name>" | init

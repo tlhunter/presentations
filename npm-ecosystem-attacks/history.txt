@@ -1,0 +1,11 @@
+12c339c5de6c5cb4a0ebbdb413203914ed1b8108 2019-03-15T18:02:25-07:00 "Thomas Hunter II <tom@intrinsic.com>" | feedback from test run
+c86dca2230bf103c4e12a0f47878be0048b7917a 2019-03-05T15:01:27-08:00 "Thomas Hunter II <tom@intrinsic.com>" | dates, resizing, better flow
+f0797b2d4d6af4ecd6cc57d7e5bbd38506c08b35 2019-03-05T14:36:02-08:00 "Thomas Hunter II <tom@intrinsic.com>" | link to presentation on final slide
+b076c8fda7d2fab62148e747bf4ba559ad295e95 2019-03-05T13:39:33-08:00 "Thomas Hunter II <tom@intrinsic.com>" | npm inc mitigation
+5c564a168543d5655f8bf158393b55036bbb1aa2 2019-03-05T13:28:08-08:00 "Thomas Hunter II <tom@intrinsic.com>" | many words
+b0536a5b5e7167e346b05f2cc5ebf66a8f0396c7 2019-03-05T11:18:00-08:00 "Thomas Hunter II <tom@intrinsic.com>" | survey results
+3b7924404a7113346f6bd64d67cfe96a5641a506 2019-03-01T16:25:50-08:00 "Thomas Hunter II <tom@intrinsic.com>" | skeleton
+dae057fc6bde8391657d770425fbbcbe1f794410 2019-03-01T13:17:43-08:00 "Thomas Hunter II <tom@intrinsic.com>" | ChALkeR notes
+f4d672d4428813eae1786d12a8fadcee881c12fa 2019-02-28T17:37:28-08:00 "Thomas Hunter II <tom@intrinsic.com>" | notes
+9168e080d4555f00936ccd03185c5e1d7d119618 2019-02-28T15:42:41-08:00 "Thomas Hunter II <tom@intrinsic.com>" | colors from NIN WITH_TEETH album art
+7a7c0e7124d35407b5a7a3e208ef3af4871f642c 2019-02-28T14:51:50-08:00 "Thomas Hunter II <tom@intrinsic.com>" | init
