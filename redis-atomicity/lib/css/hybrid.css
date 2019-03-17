@@ -1,0 +1,79 @@
+/* Based on https://github.com/w0ng/vim-hybrid */
+.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  color: #c5c8c6;
+}
+
+.hljs-keyword {
+  color: #de935f;
+}
+
+.hljs-selector-tag,
+.hljs-tag {
+  color: #8abeb7;
+}
+
+.hljs-template-tag {
+  color: #b294bb;
+}
+
+.hljs-number {
+  color: #cc6666;
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-attribute {
+  color: #8abeb7;
+}
+
+.hljs-literal {
+  color: #cc6666;
+}
+
+.hljs-subst {
+  color: #707880;
+}
+
+.hljs-title,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-section,
+.hljs-type {
+  color: #f0c674;
+}
+
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link {
+  color: #de935f;
+}
+
+.hljs-string {
+  color: #b5bd68;
+}
+
+.hljs-deletion,
+.hljs-built_in,
+.hljs-builtin-name {
+  color: #cc6666;
+}
+
+.hljs-addition,
+.hljs-comment,
+.hljs-quote,
+.hljs-meta {
+  color: #707880;
+}
+
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
