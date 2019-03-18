@@ -644,5 +644,20 @@ console.log(`3. ${proxy.name}`) // 1. proxy get
         ]
       });
     </script>
+    <script type='text/javascript'>
+      var Countly = {
+        q: [['track_sessions'], ['track_pageview'], ['track_clicks']],
+        app_key: 'eef3b12942f938d7be826186be17930bd522d315',
+        url: 'https://analytics.phobosrising.co'
+      };
+      (function() {
+         var cly = document.createElement('script'); cly.type = 'text/javascript';
+         cly.async = true; cly.src = '/scripts/countly.min.js';
+         cly.onload = function(){Countly.init()};
+         var s = document.getElementsByTagName('script')[0];
+         s.parentNode.insertBefore(cly, s);
+      })();
+    </script>
+    <noscript><img src='https://analytics.phobosrising.co/pixel.png?app_key=d91922f2a4106e3f1b2851a7bc4852606a289177&begin_session=1'/></noscript>
   </body>
 </html>
