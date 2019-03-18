@@ -147,7 +147,6 @@ body {
           <h2>Roadmap</h2>
 
           <ol>
-            <li><a href="#/chapter-0">Background</a></li>
             <li><a href="#/chapter-1">Single-Command Atomicity</a></li>
             <li><a href="#/chapter-2">Pipelining</a></li>
             <li><a href="#/chapter-3">Multi</a></li>
@@ -192,11 +191,17 @@ DEL foo</code></pre>
         </section>
 
 
+        <section id="interleaving-0">
+          <h3><em>Multiple</em> Commands aren't Atomic</h3>
+          <img src="images/interleaving-0.png" />
+          <ul>
+            <li>Scenario: Two clients want to increment <code>counter</code></li>
+          </ul>
+        </section>
         <section id="interleaving-1">
           <h3><em>Multiple</em> Commands aren't Atomic</h3>
           <img src="images/interleaving-1.png" />
           <ul>
-            <li>Scenario: Two clients want to increment <code>counter</code></li>
             <li>Client #1 reads value of <code>counter</code></li>
           </ul>
         </section>
@@ -204,7 +209,6 @@ DEL foo</code></pre>
           <h3><em>Multiple</em> Commands aren't Atomic</h3>
           <img src="images/interleaving-2.png" />
           <ul>
-            <li>Scenario: Two clients want to increment <code>counter</code></li>
             <li>Client #2 reads value of <code>counter</code></li>
           </ul>
         </section>
@@ -212,16 +216,14 @@ DEL foo</code></pre>
           <h3><em>Multiple</em> Commands aren't Atomic</h3>
           <img src="images/interleaving-3.png" />
           <ul>
-            <li>Scenario: Two clients want to increment <code>counter</code></li>
-            <li>Client #1 sets value of <code>counter</code> to <code>2</code></li>
+            <li>Client #1 sets value of <code>counter</code> to <code>1</code></li>
           </ul>
         </section>
         <section id="interleaving-4">
           <h3><em>Multiple</em> Commands aren't Atomic</h3>
           <img src="images/interleaving-4.png" />
           <ul>
-            <li>Scenario: Two clients want to increment <code>counter</code></li>
-            <li>Client #2 sets value of <code>counter</code> to <code>2</code></li>
+            <li>Client #2 sets value of <code>counter</code> to <code>1</code></li>
           </ul>
         </section>
 
@@ -236,11 +238,17 @@ GETSET key value # get old set new</code></pre>
         </section>
 
 
+        <section id="interleaving-incr-0">
+          <h3><code>INCR</code> is an Atomic Increment</h3>
+          <img src="images/interleaving-incr-0.png" />
+          <ul>
+            <li>Scenario: Two clients want to increment <code>counter</code></li>
+          </ul>
+        </section>
         <section id="interleaving-incr-1">
           <h3><code>INCR</code> is an Atomic Increment</h3>
           <img src="images/interleaving-incr-1.png" />
           <ul>
-            <li>Scenario: Two clients want to increment <code>counter</code></li>
             <li>Client #1 atomically increments value of <code>counter</code></li>
           </ul>
         </section>
@@ -248,7 +256,6 @@ GETSET key value # get old set new</code></pre>
           <h3><code>INCR</code> is an Atomic Increment</h3>
           <img src="images/interleaving-incr-2.png" />
           <ul>
-            <li>Scenario: Two clients want to increment <code>counter</code></li>
             <li>Client #2 atomically increments value of <code>counter</code></li>
           </ul>
         </section>
@@ -278,12 +285,11 @@ GETSET key value # get old set new</code></pre>
 
 
         <section>
-          <h3>Also, not a transaction</h3>
+          <h3>Pipelining: Example Code</h3>
 
-          <ul>
-            <li>If one operation fails others may succeed</li>
-          </ul>
-        </section>
+          <pre><code class='javascript'>redis.batch() // TODO
+</code></pre>
+          </section>
 
 
         <section>
@@ -319,10 +325,18 @@ GETSET key value # get old set new</code></pre>
 
 
         <section>
+          <h3>Multi: Example Code</h3>
+
+          <pre><code class='javascript'>redis.multi() // TODO
+</code></pre>
+          </section>
+
+
+        <section>
           <h3>Multi: No “Input -> Output” chaining</h3>
 
           <ul>
-            <li>Return value of one command can't be argument of another</li>
+            <li>Can't use return values as arguments</li>
           </ul>
         </section>
 
@@ -346,7 +360,56 @@ GETSET key value # get old set new</code></pre>
 
           <ul>
             <li>Output of one command can be piped into another</li>
+            <li>Other processing can happen, too</li>
           </ul>
+        </section>
+
+
+        <section>
+          <h3>Lua: Example Code</h3>
+          <!-- TODO: DIFFERENT EXAMPLE -->
+
+          <pre><code class='lua'>-- get-cities.lua: Find cities within 10km of query
+
+local key_geo = KEYS[1]
+local key_hash = KEYS[2]
+local lon = ARGV[1]
+local lat = ARGV[2]
+
+local city_ids = redis.call('GEORADIUS',
+                            key_geo, lon, lat, 10, 'km')
+
+return redis.call('HMGET', key_hash, unpack(city_ids))</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Lua: Drawbacks</h3>
+
+          <ul>
+            <li>Another language to maintain (simple grammar)</li>
+            <li>Increases overhead on Redis server</li>
+            <li>Need to load scripts, though it's idempotent</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Intrinsic: Node.js Security Policies</h3>
+
+<pre><code language="javascript">const REDIS = 'redis://redishost:6379/1';
+
+routes.allRoutes(policy =&gt; {
+  policy.redis.allowConnect(REDIS);
+});
+
+routes.get('/users/*', policy =&gt; {
+  policy.redis.allowCommandKey(REDIS, 'GET', 'user-*');
+});
+
+routes.post('/server/stats', policy =&gt; {
+  policy.redis.allowInfoSection(REDIS, 'memory');
+});</code></pre>
         </section>
 
 
@@ -357,7 +420,7 @@ GETSET key value # get old set new</code></pre>
           <ul>
             <li>Follow me: <code><a href="https://twitter.com/tlhunter">@tlhunter</a></code></li>
             <li>About Intrinsic: <code><a href="https://intrinsic.com">intrinsic.com</a></code></li>
-            <li>This presentation: <code><a href="https://bit.ly/TODO">bit.ly/TODO</a></code></li>
+            <li>This presentation: <code><a href="http://bit.ly/redis-atomicity">bit.ly/redis-atomicity</a></code></li>
           </ul>
         </section>
 
