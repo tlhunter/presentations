@@ -276,20 +276,25 @@ GETSET key value # get old set new</code></pre>
 
 
         <section>
+          <h3>Pipelining: Example Code</h3>
+
+          <pre><code class='javascript'>redis.batch()
+  .zrangebyscore('jobs', 0, now) // get jobs
+  .zremrangebyscore('jobs', 0, now) // delete jobs
+  .exec((error, data) =&gt; {
+    let jobList = data[0];
+    console.log('jobs', jobList); // perform work
+  });</code></pre>
+        </section>
+
+
+        <section>
           <h3>Pipelining: Not True Atomicity</h3>
 
           <ul>
             <li>Other connections still interleave operations</li>
           </ul>
         </section>
-
-
-        <section>
-          <h3>Pipelining: Example Code</h3>
-
-          <pre><code class='javascript'>redis.batch() // TODO
-</code></pre>
-          </section>
 
 
         <section>
@@ -327,8 +332,13 @@ GETSET key value # get old set new</code></pre>
         <section>
           <h3>Multi: Example Code</h3>
 
-          <pre><code class='javascript'>redis.multi() // TODO
-</code></pre>
+          <pre><code class='javascript'>redis.multi()
+  .zrangebyscore('jobs', 0, now) // get jobs
+  .zremrangebyscore('jobs', 0, now) // delete jobs
+  .exec((error, data) =&gt; {
+    let jobList = data[0];
+    console.log('jobs', jobList); // perform work
+  });</code></pre>
           </section>
 
 
