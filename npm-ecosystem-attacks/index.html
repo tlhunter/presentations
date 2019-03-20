@@ -180,7 +180,7 @@ body {
           <h3>Your App is Mostly Third-Party</h3>
 
           <ul>
-            <li><a href="https://slides.com/seldo/npm-and-the-future-of-javascript/#/8">npm</a> reports 97%</li>
+            <li><a href="https://slides.com/seldo/npm-and-the-future-of-javascript/#/8" title="npm and the Future of JavaScript">npm</a> reports 97%</li>
             <li>Try it on your own codebase:</li>
             <li><code>$ npx @intrinsic/loc</code>
               <ul>
@@ -211,7 +211,7 @@ Your application code:    68,490 lines ( 2.44%)
         <section>
           <h3>Supply Chain Risks via npm</h3>
 
-          <blockquote>A supply chain attack is a cyber-attack that seeks to damage an organization by targeting less-secure elements in the supply network. – <a href="https://en.wikipedia.org/wiki/Supply_chain_attack">Wikipedia</a></blockquote>
+          <blockquote>A supply chain attack is a cyber-attack that seeks to damage an organization by targeting less-secure elements in the supply network. – <a href="https://en.wikipedia.org/wiki/Supply_chain_attack" title="Supply chain attack">Wikipedia</a></blockquote>
 
           <ul>
             <li>Developer Mistakes: Accidentally dangerous code</li>
@@ -226,8 +226,6 @@ Your application code:    68,490 lines ( 2.44%)
           <img width="50%" src="images/chalker-before.png" />
           <div><small>Source: <a href="https://github.com/ChALkeR/notes/blob/master/Gathering-weak-npm-credentials.md">Gathering weak npm credentials</a> — June 6th, 2017</small></div>
         </section>
-
-
         <section>
           <h3>@ChALkeR's Research</h3>
           <img width="50%" src="images/chalker-after.png" />
@@ -253,7 +251,7 @@ Your application code:    68,490 lines ( 2.44%)
           <h3>Module: <code>left-pad</code></h3>
 
           <ul>
-            <li>Unpublished on <a href="https://blog.npmjs.org/post/141577284765/kik-left-pad-and-npm">March 22nd, 2016</a></li>
+            <li>Unpublished on <a href="https://blog.npmjs.org/post/141577284765/kik-left-pad-and-npm" title="kik, left-pad, and npm">March 22nd, 2016</a></li>
             <li>All hell broke loose</li>
             <li>A well-intended user republished the module</li>
             <li><em>We got lucky: This was not a security incident</em></li>
@@ -265,7 +263,7 @@ Your application code:    68,490 lines ( 2.44%)
           <h3>Module: <code>getcookies</code></h3>
 
           <ul>
-            <li>Discovered and unpublished on <a href="https://blog.npmjs.org/post/173526807575/reported-malicious-module-getcookies">May 2nd, 2018</a></li>
+            <li>Discovered and unpublished on <a href="https://blog.npmjs.org/post/173526807575/reported-malicious-module-getcookies" title="Reported malicious module: getcookies">May 2nd, 2018</a></li>
             <li>Looks for special headers and runs arbitrary code</li>
             <li><code>getcookies</code> was a deep dep of <code>mailparser</code></li>
             <li><code>mailparser</code> had 64,000 weekly downloads</li>
@@ -277,7 +275,7 @@ Your application code:    68,490 lines ( 2.44%)
           <h3>Module: <code>event-stream</code></h3>
 
           <ul>
-            <li>Discovered and unpublished on <a href="https://medium.com/intrinsic/compromised-npm-package-event-stream-d47d08605502">Nov 26th, 2018</a></li>
+            <li>Discovered and unpublished on <a href="https://medium.com/intrinsic/compromised-npm-package-event-stream-d47d08605502" title="Compromised npm Package: event-stream">Nov 26th, 2018</a></li>
             <li>Malicious <code>flatmap-stream</code> added as dep
               <ul>
                 <li>Happened after ownership transfer</li>
@@ -390,6 +388,7 @@ require('crypto')['createDecipher']('aes256', pkgDesc);
             <li>Affects all of OSS, not just npm</li>
             <li>Should npm force Semver major with new owner?
               <ul>
+                <li><em><a href="https://blog.npmjs.org/post/182828408610/the-security-risks-of-changing-package-owners" title="The security risks of changing package owners">Idea posed by npm's Adam Baldwin</a></em></li>
                 <li>What about every new collaborator?</li>
                 <li>GitHub collaborators can be spoofed</li>
               </ul>
@@ -402,7 +401,7 @@ require('crypto')['createDecipher']('aes256', pkgDesc);
           <h3>Need a “CSP for Node.js”</h3>
 
           <ul>
-            <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy">Content-Security-Policy</a> browser header</li>
+            <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy" title="Content-Security-Policy (MDN)">Content-Security-Policy</a> browser header</li>
             <li>Declaratively list I/O requirements
               <ul>
                 <li>Deno has an all or nothing version of this
@@ -410,7 +409,7 @@ require('crypto')['createDecipher']('aes256', pkgDesc);
                     <li><code>--allow-write</code>, <code>--allow-net</code></li>
                   </ul>
                 </li>
-                <li>PR: <a href="https://github.com/nodejs/node/pull/22112">process: initial impl of feature access control</a></li>
+                <li>PR: <a href="https://github.com/nodejs/node/pull/22112" title="Anna Henningsen, @addaleax">process: initial impl of feature access control</a></li>
               </ul>
             </li>
             <li>Per-module would be awesome, but is impossible
@@ -419,7 +418,7 @@ require('crypto')['createDecipher']('aes256', pkgDesc);
                 <li>What if you pass around a <code>Socket</code> instance?</li>
               </ul>
             </li>
-            <li>Intrinsic offers a <a href="https://medium.com/intrinsic/securing-node-js-applications-with-intrinsic-db47ff86cff8">fine-grained implementation</a></li>
+            <li>Intrinsic offers a <a href="https://medium.com/intrinsic/securing-node-js-applications-with-intrinsic-db47ff86cff8" title="Securing Node.js Applications with Intrinsic">fine-grained implementation</a></li>
           </ul>
         </section>
 
@@ -511,9 +510,9 @@ routes.post('/admin/lock', policy =&gt; {
         <section id="further-reading">
           <h3>Further Reading</h3>
           <ul>
-            <li>The Dangers of Malicious Modules<br /><code><a href="https://bit.ly/2ysIjUc">bit.ly/2ysIjUc</a></code></li>
-            <li>Compromised npm Package: event-stream<br /><code><a href="https://bit.ly/2FL0AzJ">bit.ly/2FL0AzJ</a></code></li>
-            <li>Gathering weak npm credentials (@ChALkeR)<br /><code><a href="https://bit.ly/2sFDwYX">bit.ly/2sFDwYX</a></code></li>
+            <li>The Dangers of Malicious Modules<br /><code><a href="https://bit.ly/2ysIjUc" title="The Dangers of Malicious Modules">bit.ly/2ysIjUc</a></code></li>
+            <li>Compromised npm Package: event-stream<br /><code><a href="https://bit.ly/2FL0AzJ" title="Compromised npm Package: event-stream">bit.ly/2FL0AzJ</a></code></li>
+            <li>Gathering weak npm credentials (@ChALkeR)<br /><code><a href="https://bit.ly/2sFDwYX" title="Gathering weak npm credentials">bit.ly/2sFDwYX</a></code></li>
             <!-- Stack Overflow Developer Survey 2018: https://insights.stackoverflow.com/survey/2018 -->
             <!-- 2018 Node.js User Survey Report: https://nodejs.org/en/user-survey-report/ -->
             <!-- npm This year in JavaScript: 2018: https://blog.npmjs.org/post/180868064080/this-year-in-javascript-2018-in-review-and-npms -->
@@ -525,10 +524,10 @@ routes.post('/admin/lock', policy =&gt; {
           <h3>Fin</h3>
 
           <ul>
-            <li>Follow me: <code><a href="https://twitter.com/tlhunter">@tlhunter</a></code></li>
-            <li>About Intrinsic: <code><a href="https://intrinsic.com">intrinsic.com</a></code></li>
-            <li>Package Diff: <code><a href="https://diff.intrinsic.com">diff.intrinsic.com</a></code></li>
-            <li>This presentation: <code><a href="https://bit.ly/2IWa50A">bit.ly/2IWa50A</a></code></li>
+            <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
+            <li>About Intrinsic: <code><a href="https://intrinsic.com" title="Intrinsic">intrinsic.com</a></code></li>
+            <li>Package Diff: <code><a href="https://diff.intrinsic.com" title="Package Diff">diff.intrinsic.com</a></code></li>
+            <li>This presentation: <code><a href="https://bit.ly/2IWa50A" title="Real World Attacks in the npm Ecosystem">bit.ly/2IWa50A</a></code></li>
           </ul>
         </section>
 
