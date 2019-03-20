@@ -136,7 +136,7 @@ body {
       <div class="slides">
 
         <section class="intro">
-          <h2>Atomicity in Redis<br />with examples in Node.js</h2>
+          <h2>Atomicity in Redis<br /><small>(with examples in Node.js)</small></h2>
           <h3>Thomas Hunter II</h3>
 
           <!-- <img src="./images/intrinsic.svg" width="35%" style="background: transparent; box-shadow: none;" /> -->
@@ -169,7 +169,11 @@ body {
                 <li>Except for IO and Node v10 Worker Threads</li>
               </ul>
             </li>
-            <li>Atomicity: Complex operations happen uninterupted</li>
+            <li>Atomicity:
+              <ul>
+                <li>Complex operations happen uninterupted</li>
+              </ul>
+            </li>
             <li>This becomes a problem with multiple clients</li>
           </ul>
         </section>
@@ -187,7 +191,9 @@ body {
 
 SET foo 1
 
-DEL foo</code></pre>
+DEL foo
+
+FLUSHALL</code></pre>
         </section>
 
 
@@ -231,10 +237,10 @@ DEL foo</code></pre>
         <section>
           <h3>Some use-cases have Atomic variants</h3>
 
-          <pre><code class="ini">INCR foo # increment `foo`
-SETNX bar # set if not exist `bar`
-RPOPLPUSH src dest # move an item
-GETSET key value # get old set new</code></pre>
+          <pre><code class="ini">INCR foo # GET ; foo++ ; SET
+SETNX bar # EXISTS bar ; SET bar
+RPOPLPUSH src dest # RPOP ; LPUSH
+GETSET key value # GET ; SET</code></pre>
         </section>
 
 
@@ -270,7 +276,9 @@ GETSET key value # get old set new</code></pre>
           <h3>Pipelining: Atomicity per-connection</h3>
 
           <ul>
-            <li>Within a single connection</li>
+            <li>Sends a batch of commands</li>
+            <li>Commands are sent in the same message</li>
+            <li><em>The <code>redis</code> module does this anyway</em></li>
           </ul>
         </section>
 
@@ -285,6 +293,9 @@ GETSET key value # get old set new</code></pre>
     let jobList = data[0];
     console.log('jobs', jobList); // perform work
   });</code></pre>
+
+          <pre><code class="ini">ZRANGEBYSCORE jobs 0 1553098369661
+ZREMRANGEBYSCORE jobs 0 1553098369661</code></pre>
         </section>
 
 
@@ -292,7 +303,8 @@ GETSET key value # get old set new</code></pre>
           <h3>Pipelining: Not True Atomicity</h3>
 
           <ul>
-            <li>Other connections still interleave operations</li>
+            <li>Doesn't come with guarantees</li>
+            <li>Other connections can still interleave commands</li>
           </ul>
         </section>
 
@@ -302,6 +314,8 @@ GETSET key value # get old set new</code></pre>
 
           <ul>
             <li>Reducing network latency</li>
+            <li>Send several commands in one message</li>
+            <li>Receive several responses in one message</li>
           </ul>
         </section>
 
@@ -315,7 +329,13 @@ GETSET key value # get old set new</code></pre>
           <h3>Multi: True Atomicity</h3>
 
           <ul>
-            <li>Works across many clients / connections</li>
+            <li>Atomic across many clients / connections</li>
+            <li>Client first sends a <code>MULTI</code> command</li>
+            <li>Then, sends intermediary commands</li>
+            <li>Intermediary commands don't run yet</li>
+            <li>Other clients can run commands</li>
+            <li>Client sends an <code>EXEC</code> command</li>
+            <li>At this point the commands run</li>
           </ul>
         </section>
 
@@ -324,7 +344,9 @@ GETSET key value # get old set new</code></pre>
           <h3>Multi: Transactional Atomicity</h3>
 
           <ul>
-            <li>Bonus: Can be an all or nothing feature</li>
+            <li><code>MULTI</code> begins a transaction</li>
+            <li>Commands executed within are all-or-nothing</li>
+            <li>Errors or disconnects won't lead to inconsistencies</li>
           </ul>
         </section>
 
@@ -339,14 +361,21 @@ GETSET key value # get old set new</code></pre>
     let jobList = data[0];
     console.log('jobs', jobList); // perform work
   });</code></pre>
+
+          <pre><code class="ini">MULTI
+ZRANGEBYSCORE jobs 0 1553099335332
+ZREMRANGEBYSCORE jobs 0 1553099335332
+EXEC</code></pre>
+        </section>
           </section>
 
 
         <section>
-          <h3>Multi: No “Input -> Output” chaining</h3>
+          <h3>Multi: No arg/return chaining</h3>
 
           <ul>
             <li>Can't use return values as arguments</li>
+            <li>i.e., cannot pop from list, assign to new key</li>
           </ul>
         </section>
 
@@ -360,7 +389,9 @@ GETSET key value # get old set new</code></pre>
           <h3>Lua: The Ultimate in Atomicity</h3>
 
           <ul>
-            <li>Also wrapped in a transaction?</li>
+            <li>Scripts need to be <code>LOAD</code>ed ahead of time</li>
+            <li>Referenced by SHA1 sum</li>
+            <li>Declare key names as arguments for sharding</li>
           </ul>
         </section>
 
@@ -369,8 +400,9 @@ GETSET key value # get old set new</code></pre>
           <h3>Lua: Command Chaining</h3>
 
           <ul>
-            <li>Output of one command can be piped into another</li>
+            <li>Output of one command <em>can</em> be piped into another</li>
             <li>Other processing can happen, too</li>
+            <li>Similar to an RDBMS Stored Procedure</li>
           </ul>
         </section>
 
@@ -398,8 +430,16 @@ return redis.call('HMGET', key_hash, unpack(city_ids))</code></pre>
 
           <ul>
             <li>Another language to maintain (simple grammar)</li>
-            <li>Increases overhead on Redis server</li>
-            <li>Need to load scripts, though it's idempotent</li>
+            <li>Increases overhead on Redis server
+              <ul>
+                <li>An infinite loop would lock up server</li>
+              </ul>
+            </li>
+            <li>Need to load scripts before using
+              <ul>
+                <li>It's idempotent; load scripts when app starts</li>
+              </ul>
+            </li>
           </ul>
         </section>
 
