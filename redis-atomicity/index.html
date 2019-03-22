@@ -126,6 +126,15 @@ body {
   font-weight: 600;
   text-shadow: 0px 1px 5px var(--zeta);
 }
+
+.redisconf-theme #website {
+  display: none;
+}
+#section-intro h3,
+#section-outro h3,
+.redisconf-theme #twitter a {
+  color: var(--delta);
+}
 </style>
   </head>
   <body>
@@ -135,8 +144,8 @@ body {
     <div class="reveal">
       <div class="slides">
 
-        <section class="intro">
-          <h2>Atomicity in Redis<br /><small>(with examples in Node.js)</small></h2>
+        <section id="section-intro" data-background="./images/redisconf-bg.jpg" data-state="redisconf-theme">
+          <h2>Atomicity in Redis</h2>
           <h3>Thomas Hunter II</h3>
 
           <!-- <img src="./images/intrinsic.svg" width="35%" style="background: transparent; box-shadow: none;" /> -->
@@ -466,7 +475,7 @@ routes.post('/server/stats', policy =&gt; {
 
 
 
-        <section id="final">
+        <section id="section-outro" data-background="./images/redisconf-bg.jpg" data-state="redisconf-theme">
           <h3>Fin</h3>
 
           <ul>
