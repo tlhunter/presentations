@@ -131,7 +131,6 @@ body {
   display: none;
 }
 #section-intro h3,
-#section-outro h3,
 .redisconf-theme #twitter a {
   color: var(--delta);
 }
@@ -335,6 +334,8 @@ ZREMRANGEBYSCORE jobs 0 1553098369661</code></pre>
             <li>Other connections can still interleave commands</li>
             <li>A subset of commands can fail</li>
           </ul>
+
+          <img width="50%" src="./images/pipelining.png" />
         </section>
 
 
@@ -364,13 +365,13 @@ ZREMRANGEBYSCORE jobs 0 1553098369661</code></pre>
 
           <ul>
             <li>Atomic regardless of other clients / connections</li>
-            <li>Client first sends a <code>MULTI</code> command</li>
-            <li>Commands are queued, client in transaction mode</li>
+            <li>Client sends <code>MULTI</code>, more commands, <code>EXEC</code></li>
             <li><em>Other clients can still run commands</em></li>
-            <li>Client sends an <code>EXEC</code> command</li>
             <li>Queued commands are run sequentially</li>
             <li>Any failures and the entire transaction fails</li>
           </ul>
+
+          <img width="50%" src="./images/multi-exec.png" />
         </section>
 
 
@@ -412,8 +413,16 @@ EXEC</code></pre>
           <h3>Lua: The Ultimate in Atomicity</h3>
 
           <ul>
-            <li>Scripts need to be <code>LOAD</code>ed ahead of time</li>
-            <li>Referenced by SHA1 sum</li>
+            <li>There's a simpler, less-efficient <code>EVAL</code> command
+              <ul>
+                <li>Send the entire script every time</li>
+              </ul>
+            </li>
+            <li>Or use <code>SCRIPT LOAD</code> ahead of time
+              <ul>
+                <li>Then use <code>EVALSHA</code> to run code via resulting hash</li>
+              </ul>
+            </li>
             <li>Declare key names as arguments for sharding</li>
           </ul>
         </section>
@@ -434,7 +443,7 @@ EXEC</code></pre>
           <h3>Lua: Example Code</h3>
           <!-- TODO: DIFFERENT EXAMPLE -->
 
-          <pre><code class='lua'>-- get-cities.lua: Find cities within 10km of query
+          <pre><code class='lua'>-- cities.lua: Find cities within 10km of query
 
 local key_geo = KEYS[1]
 local key_hash = KEYS[2]
@@ -451,8 +460,20 @@ return redis.call('HMGET', key_hash, unpack(city_ids))</code></pre>
         <section>
           <h3>Lua: Example Code</h3>
 
-          <pre><code class='javascript'>// TODO: JavaScript Example
-          </code></pre>
+          <pre><code class="javascript">const redis = require('redis').createClient()
+const GEO = 'geo-city', HASH = 'hash-city'
+const lua = require('fs').readFileSync('./cities.lua')
+redis.geoadd(GEO, -122.419, 37.777, 'san-francisco')
+redis.hset(HASH, 'san-francisco', JSON.stringify({
+  name: 'SF', temp: 65}))
+redis.geoadd(GEO, -122.272, 37.807, 'oakland')
+redis.hset(HASH, 'oakland', JSON.stringify({
+  name: 'Oakland', temp: 72}))
+const lon = -122.273; const lat = 37.869; // Berkeley
+redis.eval(lua, 2, GEO, HASH, lon, lat, (e, data) => {
+  console.log('cities near Berkeley', data)
+  // [ {name:"Oakland", temp: 72} ]
+});</code></pre>
         </section>
 
 
@@ -463,14 +484,27 @@ return redis.call('HMGET', key_hash, unpack(city_ids))</code></pre>
             <li>Another language to maintain (simple grammar)</li>
             <li>Increases overhead on Redis server
               <ul>
-                <li>An infinite loop would lock up server</li>
+                <li>An infinite loop could lock up server</li>
               </ul>
             </li>
-            <li>Need to load scripts before using
+            <li>Need to load scripts before using to be efficient
               <ul>
                 <li>It's idempotent; load scripts when app starts</li>
               </ul>
             </li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Recap</h3>
+
+          <ul>
+            <li>Executing singular commands are atomic</li>
+            <li>Executing multiple commands are not atomic</li>
+            <li>Pipelining is not atomic, but it's fast</li>
+            <li>MULTI is atomic, but you can't chain results</li>
+            <li>Lua scripts are atomic and chainable</li>
           </ul>
         </section>
 
@@ -496,7 +530,7 @@ routes.post('/server/stats', policy =&gt; {
 
 
         <section id="section-outro" data-background="./images/redisconf-bg.jpg" data-state="redisconf-theme">
-          <h3>Fin</h3>
+          <h2>Fin</h2>
 
           <ul>
             <li>Follow me: <code><a href="https://twitter.com/tlhunter">@tlhunter</a></code></li>
