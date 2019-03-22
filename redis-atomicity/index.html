@@ -156,7 +156,7 @@ body {
           <h2>Roadmap</h2>
 
           <ol>
-            <li><a href="#/chapter-1">Single-Command Atomicity</a></li>
+            <li><a href="#/chapter-1">Basics of Atomicity</a></li>
             <li><a href="#/chapter-2">Pipelining</a></li>
             <li><a href="#/chapter-3">Multi</a></li>
             <li><a href="#/chapter-4">Lua Scripting</a></li>
@@ -164,8 +164,32 @@ body {
         </section>
 
 
+        <section id="chapter-1">
+          <h2>Basics of Atomicity</h2>
+        </section>
+
+
+        <section id="definition">
+          <h3>What is Atomicity?</h3>
+
+          <ul>
+            <li>Series of database operations, aka a “transaction”
+              <ul>
+                <li>Guaranteed to all run or none run</li>
+                <li>Prevents operations from running partially</li>
+              </ul>
+            </li>
+            <li>The effects of all operations are immediately visible
+              <ul>
+                <li>I.e. another client cannot see partial state</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+
         <section>
-          <h3>Background</h3>
+          <h3>How does Redis work?</h3>
 
           <ul>
             <li>Redis is Mostly Single-Threaded
@@ -178,18 +202,8 @@ body {
                 <li>Except for IO and Node v10 Worker Threads</li>
               </ul>
             </li>
-            <li>Atomicity:
-              <ul>
-                <li>Complex operations happen uninterupted</li>
-              </ul>
-            </li>
             <li>This becomes a problem with multiple clients</li>
           </ul>
-        </section>
-
-
-        <section id="chapter-1">
-          <h2>Single-Command Atomicity</h2>
         </section>
 
 
@@ -244,7 +258,11 @@ FLUSHALL</code></pre>
 
 
         <section>
-          <h3>Some use-cases have Atomic variants</h3>
+          <h3>Atomic, Multi-Operation Commands</h3>
+
+          <ul>
+            <li>Common use-cases have single-command variants</li>
+          </ul>
 
           <pre><code class="ini">INCR foo # GET ; foo++ ; SET
 SETNX bar # EXISTS bar ; SET bar
@@ -286,9 +304,9 @@ GETSET key value # GET ; SET</code></pre>
 
           <ul>
             <li>Ensures commands are run in order per-connection</li>
-            <li>Sends a batch of commands</li>
+            <li>Sends a batch of commands separated by newlines</li>
             <li>Commands are sent in the same message</li>
-            <li><em>The <code>redis</code> module usually does this anyway</em></li>
+            <li><em>The Node.js <code>redis</code> module usually does this anyway</em></li>
           </ul>
         </section>
 
@@ -310,9 +328,10 @@ ZREMRANGEBYSCORE jobs 0 1553098369661</code></pre>
 
 
         <section>
-          <h3>Pipelining: Not True Atomicity</h3>
+          <h3>Pipelining: Not Atomic</h3>
 
           <ul>
+            <li>Prevents command interleaving on one connection</li>
             <li>Other connections can still interleave commands</li>
             <li>A subset of commands can fail</li>
           </ul>
@@ -327,6 +346,11 @@ ZREMRANGEBYSCORE jobs 0 1553098369661</code></pre>
             <li>Send several commands in one message</li>
             <li>Receive several responses in one message</li>
           </ul>
+
+          <pre><code class="plain">echo "PING\r\nPING\r\nPING\r\n" | nc localhost 6379
++PONG
++PONG
++PONG</code></pre>
         </section>
 
 
@@ -339,24 +363,13 @@ ZREMRANGEBYSCORE jobs 0 1553098369661</code></pre>
           <h3>Multi: True Atomicity</h3>
 
           <ul>
-            <li>Atomic across many clients / connections</li>
+            <li>Atomic regardless of other clients / connections</li>
             <li>Client first sends a <code>MULTI</code> command</li>
-            <li>Then, sends intermediary commands</li>
-            <li>Intermediary commands don't run yet</li>
-            <li>Other clients can run commands</li>
+            <li>Commands are queued, client in transaction mode</li>
+            <li><em>Other clients can still run commands</em></li>
             <li>Client sends an <code>EXEC</code> command</li>
-            <li>At this point the commands run</li>
-          </ul>
-        </section>
-
-
-        <section>
-          <h3>Multi: Transactional Atomicity</h3>
-
-          <ul>
-            <li><code>MULTI</code> begins a transaction</li>
-            <li>Commands executed within are all-or-nothing</li>
-            <li>Errors or disconnects won't lead to inconsistencies</li>
+            <li>Queued commands are run sequentially</li>
+            <li>Any failures and the entire transaction fails</li>
           </ul>
         </section>
 
@@ -381,11 +394,11 @@ EXEC</code></pre>
 
 
         <section>
-          <h3>Multi: No arg/return chaining</h3>
+          <h3>Multi Drawback: No command chaining</h3>
 
           <ul>
-            <li>Can't use return values as arguments</li>
-            <li>I.e., cannot pop from list, assign to new key</li>
+            <li>Can't use command result as argument</li>
+            <li>E.g., cannot pop from list, assign to new key</li>
           </ul>
         </section>
 
@@ -434,7 +447,14 @@ local city_ids = redis.call('GEORADIUS',
 return redis.call('HMGET', key_hash, unpack(city_ids))</code></pre>
         </section>
 
-          <!-- TODO: JAVASCRIPT EXAMPLE -->
+
+        <section>
+          <h3>Lua: Example Code</h3>
+
+          <pre><code class='javascript'>// TODO: JavaScript Example
+          </code></pre>
+        </section>
+
 
         <section>
           <h3>Lua: Drawbacks</h3>
