@@ -273,12 +273,13 @@ GETSET key value # GET ; SET</code></pre>
 
 
         <section>
-          <h3>Pipelining: Atomicity per-connection</h3>
+          <h3>Pipelining</h3>
 
           <ul>
+            <li>Ensures commands are run in order per-connection</li>
             <li>Sends a batch of commands</li>
             <li>Commands are sent in the same message</li>
-            <li><em>The <code>redis</code> module does this anyway</em></li>
+            <li><em>The <code>redis</code> module usually does this anyway</em></li>
           </ul>
         </section>
 
@@ -303,8 +304,8 @@ ZREMRANGEBYSCORE jobs 0 1553098369661</code></pre>
           <h3>Pipelining: Not True Atomicity</h3>
 
           <ul>
-            <li>Doesn't come with guarantees</li>
             <li>Other connections can still interleave commands</li>
+            <li>A subset of commands can fail</li>
           </ul>
         </section>
 
@@ -375,7 +376,7 @@ EXEC</code></pre>
 
           <ul>
             <li>Can't use return values as arguments</li>
-            <li>i.e., cannot pop from list, assign to new key</li>
+            <li>I.e., cannot pop from list, assign to new key</li>
           </ul>
         </section>
 
@@ -424,6 +425,7 @@ local city_ids = redis.call('GEORADIUS',
 return redis.call('HMGET', key_hash, unpack(city_ids))</code></pre>
         </section>
 
+          <!-- TODO: JAVASCRIPT EXAMPLE -->
 
         <section>
           <h3>Lua: Drawbacks</h3>
