@@ -7,6 +7,6 @@ const script = require('fs').readFileSync('./add-user.lua');
   await rEval(script, 2, LOBBY, GAME, 'alice');
   await rEval(script, 2, LOBBY, GAME, 'bob');
   await rEval(script, 2, LOBBY, GAME, 'cindy');
-  const [gid, plyrs] = await rEval(script, 2, LOBBY, GAME, 'tom');
+  const [gid,plyrs] = await rEval(script, 2, LOBBY, GAME,'tom');
   console.log('GAME ID', gid, 'PLAYERS', plyrs.split(','));
 })();

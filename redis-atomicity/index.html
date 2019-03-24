@@ -264,10 +264,10 @@ FLUSHALL</code></pre>
             <li>Common use-cases have single-command variants</li>
           </ul>
 
-          <pre><code class="ini">INCR foo # GET ; foo++ ; SET
-SETNX bar # EXISTS bar ; SET bar
-RPOPLPUSH src dest # RPOP ; LPUSH
-GETSET key value # GET ; SET</code></pre>
+          <pre><code class="ini">INCR foo                # GET ; foo++ ; SET
+SETNX bar               # EXISTS bar ; SET bar
+RPOPLPUSH src dest      # RPOP ; LPUSH
+GETSET key value        # GET ; SET</code></pre>
         </section>
 
 
@@ -451,7 +451,7 @@ local game = KEYS[2] -- Hash
 local user_id = ARGV[1] -- String
 redis.call('SADD', lobby, user_id)
 if redis.call('SCARD', lobby) == 4 then
-  local members = table.concat(redis.call('SMEMBERS', lobby), ",")
+  local members = table.concat(redis.call('SMEMBERS',lobby),",")
   redis.call('DEL', lobby) -- empty lobby
   local game_id = redis.sha1hex(members)
   redis.call('HSET', game, game_id, members)
@@ -474,7 +474,7 @@ const LOBBY = 'lobby-elo-1500', GAME = 'game-hash';
   await rEval(script, 2, LOBBY, GAME, 'alice');
   await rEval(script, 2, LOBBY, GAME, 'bob');
   await rEval(script, 2, LOBBY, GAME, 'cindy');
-  const [gid, plyrs] = await rEval(script, 2, LOBBY, GAME, 'tom');
+  const [gid,plyrs] = await rEval(script, 2, LOBBY, GAME,'tom');
   console.log('GAME ID', gid, 'PLAYERS', plyrs.split(','));
 })();</code></pre>
         </section>
