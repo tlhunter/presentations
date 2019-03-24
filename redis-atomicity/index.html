@@ -16,7 +16,7 @@
     </script>
 <style>
 :root {
-  --zeta: #0E0E0E;
+  --zeta: #000;
   --alpha: #0E0E0E;
   --beta: #263A3E;
   --gamma: #6A848B;
@@ -34,7 +34,7 @@ body {
   width: 100%;
   box-shadow: none;
   background-color: var(--zeta);
-  padding: 1em;
+  padding: 1em 0;
 }
 .reveal pre .nl {
   color: var(--epsilon);
@@ -42,6 +42,7 @@ body {
 .reveal pre code {
   max-height: 500px;
   padding: 0px;
+  margin: 0em 1em;
 }
 .reveal p code,
 .reveal li code {
@@ -155,16 +156,16 @@ body {
           <h2>Roadmap</h2>
 
           <ol>
-            <li><a href="#/chapter-1">Basics of Atomicity</a></li>
+            <li><a href="#/chapter-1">The Basics</a></li>
             <li><a href="#/chapter-2">Pipelining</a></li>
-            <li><a href="#/chapter-3">Multi</a></li>
+            <li><a href="#/chapter-3">Transactions</a></li>
             <li><a href="#/chapter-4">Lua Scripting</a></li>
           </ol>
         </section>
 
 
         <section id="chapter-1">
-          <h2>Basics of Atomicity</h2>
+          <h2>The Basics</h2>
         </section>
 
 
@@ -327,12 +328,13 @@ ZREMRANGEBYSCORE jobs 0 1553098369661</code></pre>
 
 
         <section>
-          <h3>Pipelining: Not Atomic</h3>
+          <h3>Pipelining: Not Atomic, Sorry</h3>
 
           <ul>
+            <li><em>Almost looks atomic</em></li>
             <li>Prevents command interleaving on one connection</li>
-            <li>Other connections can still interleave commands</li>
             <li>A subset of commands can fail</li>
+            <li>No guarantee that other clients won't interleave</li>
           </ul>
 
           <img width="50%" src="./images/pipelining.png" />
@@ -356,12 +358,12 @@ ZREMRANGEBYSCORE jobs 0 1553098369661</code></pre>
 
 
         <section id="chapter-3">
-          <h2>Multi</h2>
+          <h2>Transactions</h2>
         </section>
 
 
         <section>
-          <h3>Multi: True Atomicity</h3>
+          <h3>MULTI: True Atomicity</h3>
 
           <ul>
             <li>Atomic regardless of other clients / connections</li>
@@ -376,7 +378,7 @@ ZREMRANGEBYSCORE jobs 0 1553098369661</code></pre>
 
 
         <section>
-          <h3>Multi: Example Code</h3>
+          <h3>MULTI: Example Code</h3>
 
           <pre><code class='javascript'>redis.multi()
   .zrangebyscore('jobs', 0, now) // get jobs
@@ -395,7 +397,7 @@ EXEC</code></pre>
 
 
         <section>
-          <h3>Multi Drawback: No command chaining</h3>
+          <h3>MULTI Drawback: No command chaining</h3>
 
           <ul>
             <li>Can't use command result as argument</li>
@@ -416,11 +418,13 @@ EXEC</code></pre>
             <li>There's a simpler, less-efficient <code>EVAL</code> command
               <ul>
                 <li>Send the entire script every time</li>
+                <li>Like sending a normal SQL query</li>
               </ul>
             </li>
             <li>Or use <code>SCRIPT LOAD</code> ahead of time
               <ul>
                 <li>Then use <code>EVALSHA</code> to run code via resulting hash</li>
+                <li>Like executing a SQL Stored Procedure</li>
               </ul>
             </li>
             <li>Declare key names as arguments for sharding</li>
@@ -429,51 +433,50 @@ EXEC</code></pre>
 
 
         <section>
-          <h3>Lua: Command Chaining</h3>
+          <h3>Lua: Server-Side Logic</h3>
 
           <ul>
-            <li>Output of one command <em>can</em> be piped into another</li>
+            <li>Output of one command can be piped into another</li>
             <li>Other processing can happen, too</li>
-            <li>Similar to an RDBMS Stored Procedure</li>
           </ul>
         </section>
 
 
         <section>
           <h3>Lua: Example Code</h3>
-          <!-- TODO: DIFFERENT EXAMPLE -->
 
-          <pre><code class='lua'>-- cities.lua: Find cities within 10km of query
-
-local key_geo = KEYS[1]
-local key_hash = KEYS[2]
-local lon = ARGV[1]
-local lat = ARGV[2]
-
-local city_ids = redis.call('GEORADIUS',
-                            key_geo, lon, lat, 10, 'km')
-
-return redis.call('HMGET', key_hash, unpack(city_ids))</code></pre>
+          <pre><code class='lua'>-- add-user.lua: add user to lobby, start game if 4 players
+local lobby = KEYS[1] -- Set
+local game = KEYS[2] -- Hash
+local user_id = ARGV[1] -- String
+redis.call('SADD', lobby, user_id)
+if redis.call('SCARD', lobby) == 4 then
+  local members = table.concat(redis.call('SMEMBERS', lobby), ",")
+  redis.call('DEL', lobby) -- empty lobby
+  local game_id = redis.sha1hex(members)
+  redis.call('HSET', game, game_id, members)
+  return {game_id, members}
+end
+return nil</code></pre>
         </section>
 
 
         <section>
           <h3>Lua: Example Code</h3>
 
-          <pre><code class="javascript">const redis = require('redis').createClient()
-const GEO = 'geo-city', HASH = 'hash-city'
-const lua = require('fs').readFileSync('./cities.lua')
-redis.geoadd(GEO, -122.419, 37.777, 'san-francisco')
-redis.hset(HASH, 'san-francisco', JSON.stringify({
-  name: 'SF', temp: 65}))
-redis.geoadd(GEO, -122.272, 37.807, 'oakland')
-redis.hset(HASH, 'oakland', JSON.stringify({
-  name: 'Oakland', temp: 72}))
-const lon = -122.273; const lat = 37.869; // Berkeley
-redis.eval(lua, 2, GEO, HASH, lon, lat, (e, data) => {
-  console.log('cities near Berkeley', data)
-  // [ {name:"Oakland", temp: 72} ]
-});</code></pre>
+          <pre><code class="javascript">const redis = require('redis').createClient();
+const rEval = require('util').promisify(redis.eval).bind(redis);
+const script = require('fs').readFileSync('./add-user.lua');
+
+const LOBBY = 'lobby-elo-1500', GAME = 'game-hash';
+
+(async () =&gt; {
+  await rEval(script, 2, LOBBY, GAME, 'alice');
+  await rEval(script, 2, LOBBY, GAME, 'bob');
+  await rEval(script, 2, LOBBY, GAME, 'cindy');
+  const [gid, plyrs] = await rEval(script, 2, LOBBY, GAME, 'tom');
+  console.log('GAME ID', gid, 'PLAYERS', plyrs.split(','));
+})();</code></pre>
         </section>
 
 
@@ -557,6 +560,8 @@ routes.post('/server/stats', policy =&gt; {
         controlsBackArrows: 'visible',
         history: true,
         help: false,
+        width: 1200,
+        height: 700,
         dependencies: [
           { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
         ]
