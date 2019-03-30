@@ -266,6 +266,7 @@ FLUSHALL</code></pre>
 
           <pre><code class="ini">INCR foo                # GET ; foo++ ; SET
 SETNX bar               # EXISTS bar ; SET bar
+HSETNX bar foo          # HEXISTS bar foo ; HSET bar foo
 RPOPLPUSH src dest      # RPOP ; LPUSH
 GETSET key value        # GET ; SET</code></pre>
         </section>
@@ -334,10 +335,49 @@ ZREMRANGEBYSCORE jobs 0 1553098369661</code></pre>
             <li><em>Almost looks atomic</em></li>
             <li>Prevents command interleaving on one connection</li>
             <li>A subset of commands can fail</li>
-            <li>No guarantee that other clients won't interleave</li>
+            <li>Other client pipelines can interleave commands</li>
           </ul>
 
           <img width="50%" src="./images/pipelining.png" />
+        </section>
+
+
+        <section>
+          <h3>Pipelining: Not Atomic, Sorry</h3>
+
+          <pre><code class='javascript'>const redis = require('redis').createClient();
+// run 10 instances of this process in parallel
+let keys = [];
+for (let i = 0; i &lt; 100000; i++) {
+  keys.push(i);
+}
+shuffle(keys);
+let pipeline = redis.batch();
+for (let key of keys) {
+  pipeline = pipeline.hsetnx('pipeline', `k${key}`, process.pid);
+}
+
+pipeline.exec(() =&gt; redis.quit());</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Pipelining: Not Atomic, Sorry</h3>
+
+          <pre><code class='javascript'>&gt; HGETALL pipeline
+
+
+...
+k46468:     25198
+k67664:     25197
+k62167:     25197
+k5933:      25202
+k19146:     25202
+k202:       25196
+k47418:     25198
+k88650:     25202
+...
+</code></pre>
         </section>
 
 
