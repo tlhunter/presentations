@@ -8,7 +8,11 @@ let pipeline = redis.batch();
 for (let key of keys) {
   pipeline = pipeline.hsetnx('pipeline', `k${key}`, process.pid);
 }
-pipeline.exec(() => redis.quit());
+console.log(`PID ${process.pid} START`);
+pipeline.exec(() => {
+  console.log(`PID ${process.pid} STOP`);
+  redis.quit()
+});
 
 // https://stackoverflow.com/a/6274381/538646
 function shuffle(a) {
