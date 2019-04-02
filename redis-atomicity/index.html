@@ -135,6 +135,9 @@ body {
 .redisconf-theme #twitter a {
   color: var(--delta);
 }
+#section-intro img {
+  margin-top: 40px;
+}
 </style>
   </head>
   <body>
@@ -148,7 +151,7 @@ body {
           <h2>Atomicity in Redis</h2>
           <h3>Thomas Hunter II</h3>
 
-          <!-- <img src="./images/intrinsic.svg" width="35%" style="background: transparent; box-shadow: none;" /> -->
+          <img src="./images/intrinsic.svg" width="30%" style="background: transparent; box-shadow: none;" />
         </section>
 
 
@@ -173,7 +176,7 @@ body {
           <h3>What is Atomicity?</h3>
 
           <ul>
-            <li>Series of database operations, aka a “transaction”
+            <li>Series of database operations
               <ul>
                 <li>Guaranteed to all run or none run</li>
                 <li>Prevents operations from running partially</li>
@@ -184,12 +187,13 @@ body {
                 <li>I.e. another client cannot see partial state</li>
               </ul>
             </li>
+            <li>Also referred to as a <strong>Transaction</strong></li>
           </ul>
         </section>
 
 
         <section>
-          <h3>How does Redis work?</h3>
+          <h3>How do these tools work?</h3>
 
           <ul>
             <li>Redis is Mostly Single-Threaded
@@ -202,7 +206,8 @@ body {
                 <li>Except for IO and Node v10 Worker Threads</li>
               </ul>
             </li>
-            <li>This becomes a problem with multiple clients</li>
+            <li>Single Client &amp; Server is simple</li>
+            <li>Things get complicated with multiple clients</li>
           </ul>
         </section>
 
@@ -210,13 +215,7 @@ body {
         <section>
           <h3>Every <em>Single</em> Command is Atomic</h3>
 
-          <pre><code class="ini">GET foo
-
-SET foo 1
-
-DEL foo
-
-FLUSHALL</code></pre>
+          <img src="images/commands.png" width="55%" />
         </section>
 
 
@@ -264,11 +263,11 @@ FLUSHALL</code></pre>
             <li>Common use-cases have single-command variants</li>
           </ul>
 
-          <pre><code class="ini">INCR foo                # GET ; foo++ ; SET
-SETNX bar               # EXISTS bar ; SET bar
-HSETNX bar foo          # HEXISTS bar foo ; HSET bar foo
-RPOPLPUSH src dest      # RPOP ; LPUSH
-GETSET key value        # GET ; SET</code></pre>
+          <pre><code class="ini">INCR key              # GET key ; ~value++ ; SET key ~value
+SETNX key value       # !EXISTS key ; SET key value
+LPUSHX key value      # EXISTS key ; LPUSH key value
+RPOPLPUSH src dest    # RPOP src ; LPUSH dest ~value
+GETSET key value      # GET key ; SET key value</code></pre>
         </section>
 
 
@@ -323,8 +322,7 @@ GETSET key value        # GET ; SET</code></pre>
     console.log('jobs', jobList); // perform work
   });</code></pre>
 
-          <pre><code class="ini">ZRANGEBYSCORE jobs 0 1553098369661
-ZREMRANGEBYSCORE jobs 0 1553098369661</code></pre>
+          <pre><code class="ini">ZRANGEBYSCORE jobs 0 1000\r\nZREMRANGEBYSCORE jobs 0 1000</code></pre>
         </section>
 
 
@@ -332,7 +330,7 @@ ZREMRANGEBYSCORE jobs 0 1553098369661</code></pre>
           <h3>Pipelining: Not Atomic, Sorry</h3>
 
           <ul>
-            <li><em>Almost looks atomic</em></li>
+            <li><em>It looks atomic</em></li>
             <li>Prevents command interleaving on one connection</li>
             <li>A subset of commands can fail</li>
             <li>Other client pipelines can interleave commands</li>
@@ -483,7 +481,7 @@ EXEC</code></pre>
 
 
         <section>
-          <h3>Lua: Example Code</h3>
+          <h3>Lua: Game Lobby Example Code</h3>
 
           <pre><code class='lua'>-- add-user.lua: add user to lobby, start game if 4 players
 local lobby = KEYS[1] -- Set
@@ -502,7 +500,7 @@ return nil</code></pre>
 
 
         <section>
-          <h3>Lua: Example Code</h3>
+          <h3>Lua: Game Lobby Example Code</h3>
 
           <pre><code class="javascript">const redis = require('redis').createClient();
 const rEval = require('util').promisify(redis.eval).bind(redis);
@@ -524,7 +522,11 @@ const LOBBY = 'lobby-elo-1500', GAME = 'game-hash';
           <h3>Lua: Drawbacks</h3>
 
           <ul>
-            <li>Another language to maintain (simple grammar)</li>
+            <li>Another language to maintain
+              <ul>
+                <li>Simple language, easy syntax</li>
+              </ul>
+            </li>
             <li>Increases overhead on Redis server
               <ul>
                 <li>An infinite loop could lock up server</li>
