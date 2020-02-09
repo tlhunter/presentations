@@ -1,0 +1,364 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Friends don't let friends Cluster by @tlhunter</title>
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css">
+    <link rel="stylesheet" href="lib/css/hybrid.css">
+    <script>
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+<style>
+:root {
+  --zeta: #D9D0D0;
+  --alpha: #FFFFFF;
+  --beta: #8B3F8C;
+  --gamma: #A43CA6;
+  --delta: #8C4A81;
+  --epsilon: #00a8a8;
+  --omega: #222222;
+  --theta: #00a8a8;
+}
+body {
+  background-color: var(--alpha);
+}
+
+.reveal {
+  color: var(--epsilon);
+}
+.reveal pre {
+  font-size: 0.7em;
+  width: 100%;
+  box-shadow: none;
+}
+.reveal pre .nl {
+  color: var(--epsilon);
+}
+.reveal pre code {
+  max-height: 500px;
+  padding: 0px;
+  background-color: var(--omega);
+}
+.reveal p code,
+.reveal li code {
+  background-color: var(--zeta);
+  border-radius: 8px;
+  color: var(--beta);
+  padding: 2px 10px;
+}
+.reveal li code,
+.reveal p code,
+.reveal h3 code {
+  font-size: 0.8em;
+}
+.reveal li code a {
+  color: var(--beta);
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  text-transform: initial;
+}
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.attention {
+  color: var(--epsilon);
+  text-shadow: 0px 1px 5px var(--zeta);
+}
+.reveal h3 {
+  color: var(--gamma);
+}
+
+.reveal section img {
+  border: none;
+  background: transparent;
+  border: 0px;
+  box-shadow: none;
+}
+.reveal blockquote {
+  text-align: left;
+  width: auto;
+  padding: 0.5em 1em;
+}
+.reveal blockquote .author {
+  text-align: right;
+}
+.reveal a {
+  color: var(--omega);
+}
+.reveal a:hover {
+  color: var(--theta);
+}
+.reveal pre .highlight {
+  color: var(--delta);
+}
+
+.reveal .progress span {
+  background-color: var(--delta);
+}
+.reveal .controls {
+  color: var(--gamma);
+}
+
+section.intro img {
+  margin-top: 40px;
+}
+
+#twitter {
+  left: 20px;
+}
+#website {
+  right: 20px;
+}
+.floater {
+  position: absolute;
+  bottom: 20px;
+  font-size: 3em;
+  z-index: 1;
+}
+.floater, .floater a {
+  color: var(--gamma);
+  text-decoration: none;
+  font-family: "Source Sans Pro", Helvetica, sans-serif;
+  font-weight: 600;
+  text-shadow: 0px 1px 5px var(--zeta);
+}
+</style>
+  </head>
+  <body>
+    <div id="twitter" class="floater"><a href="https://twitter.com/tlhunter">@tlhunter</a></div>
+    <!-- <div id="website" class="floater"><a href="https://intrinsic.com">intrinsic.com</a></div> -->
+
+    <div class="reveal">
+      <div class="slides">
+
+        <section class="intro">
+          <h2>Friends don't let friends Cluster</h2>
+          <h3>Thomas Hunter II</h3>
+        </section>
+
+
+        <section>
+          <h3>Problem: Sometimes one isn't enough</h3>
+
+          <ul>
+            <li>A single process can get overwhelmed</li>
+            <li>Slow synchronous work blocks event loop</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Solution: Run more than one</h3>
+
+          <ul>
+            <li>In theory, two processes handle twice the load</li>
+            <li>But, what's the best way to run multiple processes?</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h2>Roadmap</h2>
+
+          <ol>
+            <li><a href="#/chapter-1">What is <code>cluster</code>?</a></li>
+            <li><a href="#/chapter-2">What is a Reverse Proxy?</a></li>
+            <li><a href="#/chapter-3">Performance comparison</a></li>
+          </ol>
+        </section>
+
+
+        <section id="chapter-1">
+          <h2>What is <code>cluster</code>?</h2>
+        </section>
+
+
+        <section>
+          <h3>Cluster is a module built into Node.js</h3>
+
+          <img src="images/cluster-module.png" />
+        </section>
+
+
+        <section>
+          <h3>Cluster makes clustering easy</h3>
+
+<pre><code>const cluster = require('cluster');
+const http = require('http');
+const cool_value = Math.random();
+
+if (cluster.isMaster) {
+  console.log(`Master ${process.pid} is running`);
+  cluster.fork(); cluster.fork(); // Assume 2 CPU
+} else {
+  http.createServer((req, res) =&gt; {
+    res.writeHead(200);
+    res.end('hello world\n');
+  }).listen(8000);
+  console.log(`Worker ${process.pid} started`);
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Docs are a little misleading</h3>
+          <ul>
+            <li>The docs make it look like a single global</li>
+            <li>For example, is <code>cool_value</code> shared?</li>
+            <li>Why does the master load the <code>http</code> module?</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Cluster: A safer example</h3>
+
+<pre><code>// master.js
+const cluster = require('cluster');
+console.log(`Master ${process.pid} is running`);
+cluster.setupMaster({exec: __dirname+'/worker.js'});
+cluster.fork(); cluster.fork();</code></pre>
+
+<pre><code>// worker.js
+require('http').createServer((req, res) =&gt; {
+  res.writeHead(200);
+  res.end('hello world\n');
+}).listen(8000);
+console.log(`Worker ${process.pid} started`);</code></pre>
+        </section>
+
+
+        <section>
+          <h3>How does it work?</h3>
+          <ul>
+            <li>Each worker tells parent what port to listen</li>
+            <li>Master sends messages round robin to workers</li>
+            <li>If bind on port <code>0</code>, aka random high, it's consistent</li>
+          </ul>
+
+          <pre>node,7649 ./master.js       # pstree output
+  ├─node,7656 server.js
+  │   ├─{node},15237
+  │   └─{node},15243        # six total children
+  ├─node,7657 server.js
+  │   ├─{node},15243
+  │   └─{node},15244        # six total children
+  ├─{node},15229
+  └─{node},15230            # six total children</pre>
+        </section>
+
+
+        <section>
+          <h3>Why is it bad?</h3>
+          <ul>
+            <li>You're running 3 Node.js instances instead of 2
+              <ul>
+                <li>Many services reload all modules in master</li>
+              </ul>
+            </li>
+            <li>You can only route requests to the same machine</li>
+            <li>L4 routing, doesn't route long-lived requests
+              <ul>
+                <li>Consider the gRPC (over HTTP2) protocol</li>
+                <li>The master would stick to a single worker</li>
+                <!-- https://gist.github.com/thpham/114d20de8472b2cef966 -->
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+
+        <section id="chapter-2">
+          <h2>What is a Reverse Proxy?</h2>
+        </section>
+
+
+        <section>
+          <h3>TODO</h3>
+
+          <img src="images/reverse-proxy.png" />
+
+        </section>
+
+
+        <section id="chapter-3">
+          <h2>Performance comparison</h2>
+        </section>
+
+
+        <section>
+          <h3>TODO</h3>
+        </section>
+
+
+        <section>
+          <h3>TODO</h3>
+        </section>
+
+
+        <section>
+          <h3>TODO</h3>
+        </section>
+
+
+
+        <section id="final">
+          <h3>Fin</h3>
+
+          <ul>
+            <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
+            <li>This presentation: <code><a href="TODO" title="Friends don't let friends Cluster">bit.ly/TODO</a></code></li>
+          </ul>
+        </section>
+
+
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      Reveal.initialize({
+        transition: 'none',
+        center: true,
+        touch: true,
+        controls: false,
+        controlsTutorial: false,
+        controlsLayout: 'edges',
+        controlsBackArrows: 'visible',
+        history: true,
+        help: false,
+        dependencies: [
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        ]
+      });
+    </script>
+    <script type='text/javascript'>
+      var Countly = {
+        q: [['track_sessions'], ['track_pageview'], ['track_clicks']],
+        app_key: 'eef3b12942f938d7be826186be17930bd522d315',
+        url: 'https://analytics.phobosrising.co'
+      };
+      (function() {
+         var cly = document.createElement('script'); cly.type = 'text/javascript';
+         cly.async = true; cly.src = '/scripts/countly.min.js';
+         cly.onload = function(){Countly.init()};
+         var s = document.getElementsByTagName('script')[0];
+         s.parentNode.insertBefore(cly, s);
+      })();
+    </script>
+    <noscript><img src='https://analytics.phobosrising.co/pixel.png?app_key=d91922f2a4106e3f1b2851a7bc4852606a289177&begin_session=1'/></noscript>
+  </body>
+</html>
