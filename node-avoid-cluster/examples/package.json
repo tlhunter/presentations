@@ -1,0 +1,11 @@
+{
+  "name": "node-avoid-cluster",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Example code for Friends don't let friends Cluster",
+  "author": "Thomas Hunter II <me@thomashunter.name>",
+  "license": "BSD-2-Clause",
+  "dependencies": {
+    "fastify": "^2.12.0"
+  }
+}

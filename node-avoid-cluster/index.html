@@ -240,7 +240,7 @@ console.log(`Worker ${process.pid} started`);</code></pre>
 
 
         <section>
-          <h3>How does it work?</h3>
+          <h3>How does Cluster work?</h3>
           <ul>
             <li>Each worker tells parent what port to listen</li>
             <li>Master sends messages round robin to workers</li>
@@ -260,7 +260,7 @@ console.log(`Worker ${process.pid} started`);</code></pre>
 
 
         <section>
-          <h3>Why is it bad?</h3>
+          <h3>Why is Cluster undesirable?</h3>
           <ul>
             <li>You're running 3 Node.js instances instead of 2
               <ul>
@@ -285,10 +285,54 @@ console.log(`Worker ${process.pid} started`);</code></pre>
 
 
         <section>
-          <h3>TODO</h3>
+          <h3>A Reverse Proxy (like HAProxy) can...</h3>
+
+          <ul>
+            <li>Dispatches requests to backend services</li>
+            <li>Performs encoding duties (TLS, gzip)</li>
+            <li>Clean requests, sticky sessions, modify headers...</li>
+            <li>Fancy routing to multiple backends</li>
+          </ul>
 
           <img src="images/reverse-proxy.png" />
+        </section>
 
+
+        <section>
+          <h3>HAProxy Routing</h3>
+
+          <ul>
+            <li>By default, HAProxy routes round robin (like Cluster)</li>
+            <li>Configuration is declarative</li>
+            <li>HAProxy is extrememly efficient, C, event loop ;)</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>HAProxy Configuration</h3>
+
+          <pre><code>defaults
+  mode http
+
+frontend inbound
+  bind localhost:3000
+  default_backend web-api
+
+backend web-api
+  server web-api-1 localhost:3001
+  server web-api-2 localhost:3002</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Why prefer HAProxy over Cluster?</h3>
+          <ul>
+            <li>Smaller footprint (tiny C binary)</li>
+            <li>Much more stable than Node.js app code</li>
+            <li>Able to route requests between machines</li>
+            <li>Simplifies application code (no gzip, TLS)</li>
+          </ul>
         </section>
 
 
@@ -296,14 +340,29 @@ console.log(`Worker ${process.pid} started`);</code></pre>
           <h2>Performance comparison</h2>
         </section>
 
+        <section>
+          <h3>Testing Approach</h3>
+
+          <ul>
+            <li>Each test has HAProxy in front of Node.js</li>
+            <li>Either perform gzip/TLS in HAProxy or Node.js</li>
+            <li>HAProxy introduces latency via network hop</li>
+          </ul>
+
+          <img src="images/perf-architecture.png" />
+        </section>
 
         <section>
-          <h3>TODO</h3>
+          <h3>HAProxy vs. Node.js: TLS Termination</h3>
+
+          <img src="images/performance-tls.png" />
         </section>
 
 
         <section>
-          <h3>TODO</h3>
+          <h3>HAProxy vs. Node.js: gzip Compression</h3>
+
+          <img src="images/performance-gzip.png" />
         </section>
 
 
@@ -318,7 +377,7 @@ console.log(`Worker ${process.pid} started`);</code></pre>
 
           <ul>
             <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
-            <li>This presentation: <code><a href="TODO" title="Friends don't let friends Cluster">bit.ly/TODO</a></code></li>
+            <li>This presentation: <code><a href="http://bit.ly/3bBHuYY" title="Friends don't let friends Cluster">bit.ly/3bBHuYY</a></code></li>
           </ul>
         </section>
 
