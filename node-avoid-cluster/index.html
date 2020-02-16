@@ -155,6 +155,8 @@ section.intro img {
           <ul>
             <li>A single process can get overwhelmed</li>
             <li>Slow synchronous work blocks event loop</li>
+            <li>Perhaps a memory-heavy application</li>
+            <li>Non-zero chance that a process will crash</li>
           </ul>
         </section>
 
@@ -162,9 +164,14 @@ section.intro img {
           <h3>Solution: Run more than one</h3>
 
           <ul>
+            <li>Also called <em>Horizontal Scaling</em></li>
             <li>In theory, two processes handle twice the load</li>
-            <li>But, what's the best way to run multiple processes?</li>
+            <li>If one crashes, the other may survive</li>
           </ul>
+        </section>
+
+        <section>
+          <h3>But, what's the best way to<br />run multiple processes?</h3>
         </section>
 
 
@@ -186,6 +193,8 @@ section.intro img {
 
         <section>
           <h3>Cluster is a module built into Node.js</h3>
+
+          <pre><code class="javascript">const cluster = require('cluster');</code></pre>
 
           <img src="images/cluster-module.png" />
         </section>
@@ -264,12 +273,13 @@ console.log(`Worker ${process.pid} started`);</code></pre>
           <ul>
             <li>You're running 3 Node.js instances instead of 2
               <ul>
-                <li>Many services reload all modules in master</li>
+                <li>In practice, many apps load all modules in master</li>
               </ul>
             </li>
-            <li>You can only route requests to the same machine</li>
+            <li>You can only route requests on the same machine</li>
             <li>L4 routing, doesn't route long-lived requests
               <ul>
+                <li>L4 means it routes the TCP connection</li>
                 <li>Consider the gRPC (over HTTP2) protocol</li>
                 <li>The master would stick to a single worker</li>
                 <!-- https://gist.github.com/thpham/114d20de8472b2cef966 -->
@@ -288,10 +298,10 @@ console.log(`Worker ${process.pid} started`);</code></pre>
           <h3>A Reverse Proxy (like HAProxy) can...</h3>
 
           <ul>
-            <li>Dispatches requests to backend services</li>
-            <li>Performs encoding duties (TLS, gzip)</li>
+            <li>Dispatche requests to backend services</li>
+            <li>Perform encoding duties (TLS, gzip)</li>
             <li>Clean requests, sticky sessions, modify headers...</li>
-            <li>Fancy routing to multiple backends</li>
+            <li>Route to multiple backends based on criteria</li>
           </ul>
 
           <img src="images/reverse-proxy.png" />
@@ -329,9 +339,13 @@ backend web-api
           <h3>Why prefer HAProxy over Cluster?</h3>
           <ul>
             <li>Smaller footprint (tiny C binary)</li>
-            <li>Much more stable than Node.js app code</li>
             <li>Able to route requests between machines</li>
-            <li>Simplifies application code (no gzip, TLS)</li>
+            <li>Offload complexity to code you don't maintain!
+              <ul>
+                <li>More stable than Node.js app code</li>
+                <li>Simplifies application (no gzip, TLS, certs)</li>
+              </ul>
+            </li>
           </ul>
         </section>
 
@@ -347,29 +361,37 @@ backend web-api
             <li>Each test has HAProxy in front of Node.js</li>
             <li>Either perform gzip/TLS in HAProxy or Node.js</li>
             <li>HAProxy introduces latency via network hop</li>
+            <li>Fastify, routing, not basic <code>http</code> module</li>
+            <li>Benchmark Code: <code><a href="https://bit.ly/39AgMxS">bit.ly/39AgMxS</a></code></li>
           </ul>
 
           <img src="images/perf-architecture.png" />
+
+          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1</small></p>
         </section>
 
         <section>
-          <h3>HAProxy vs. Node.js: TLS Termination</h3>
+          <h3>HAProxy vs Node.js: TLS Termination</h3>
+          <!-- haproxy-https-node-http.cfg -->
 
-          <img src="images/performance-tls.png" />
+          <ul>
+            <li>HAProxy is ~11% to ~13% faster than Node.js</li>
+          </ul>
+
+          <img src="images/performance-tls.png" height="400" />
         </section>
 
 
         <section>
-          <h3>HAProxy vs. Node.js: gzip Compression</h3>
+          <h3>HAProxy vs Node.js: gzip Compression</h3>
+          <!-- haproxy-gzip-node-plain.cfg -->
 
-          <img src="images/performance-gzip.png" />
+          <ul>
+            <li>HAProxy is ~2.4x to ~3x as fast as Node.js</li>
+          </ul>
+
+          <img src="images/performance-gzip.png" height="400" />
         </section>
-
-
-        <section>
-          <h3>TODO</h3>
-        </section>
-
 
 
         <section id="final">
@@ -378,6 +400,7 @@ backend web-api
           <ul>
             <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
             <li>This presentation: <code><a href="http://bit.ly/3bBHuYY" title="Friends don't let friends Cluster">bit.ly/3bBHuYY</a></code></li>
+            <li>Benchmark Code: <code><a href="https://bit.ly/39AgMxS">bit.ly/39AgMxS</a></code></li>
           </ul>
         </section>
 
