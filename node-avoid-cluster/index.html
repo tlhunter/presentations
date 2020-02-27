@@ -42,7 +42,8 @@ body {
 }
 .reveal pre code {
   max-height: 500px;
-  padding: 0px;
+  padding: 10px 17px;
+  border-radius: 10px;
   background-color: var(--omega);
 }
 .reveal p code,
@@ -372,25 +373,51 @@ backend web-api
 
         <section>
           <h3>HAProxy vs Node.js: TLS Termination</h3>
-          <!-- haproxy-https-node-http.cfg -->
 
           <ul>
-            <li>HAProxy is ~11% to ~13% faster than Node.js</li>
+            <li>17kb payload: HAProxy is ~13% faster</li>
           </ul>
 
-          <img src="images/performance-tls.png" height="400" />
+          <img src="images/perf-tls-17.png" height="380" />
+
+          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1</small></p>
+        </section>
+
+        <section>
+          <h3>HAProxy vs Node.js: TLS Termination</h3>
+
+          <ul>
+            <li>170kb payload: HAProxy is ~18% faster</li>
+          </ul>
+
+          <img src="images/perf-tls-170.png" height="380" />
+
+          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1</small></p>
         </section>
 
 
         <section>
           <h3>HAProxy vs Node.js: gzip Compression</h3>
-          <!-- haproxy-gzip-node-plain.cfg -->
 
           <ul>
-            <li>HAProxy is ~2.4x to ~3x as fast as Node.js</li>
+            <li>17kb payload: HAProxy is ~601% faster</li>
           </ul>
 
-          <img src="images/performance-gzip.png" height="400" />
+          <img src="images/perf-gzip-17.png" height="380" />
+
+          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1</small></p>
+        </section>
+
+        <section>
+          <h3>HAProxy vs Node.js: gzip Compression</h3>
+
+          <ul>
+            <li>170kb payload: HAProxy is ~407% faster</li>
+          </ul>
+
+          <img src="images/perf-gzip-170.png" height="380" />
+
+          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1</small></p>
         </section>
 
 
@@ -401,6 +428,7 @@ backend web-api
             <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
             <li>This presentation: <code><a href="http://bit.ly/3bBHuYY" title="Friends don't let friends Cluster">bit.ly/3bBHuYY</a></code></li>
             <li>Benchmark Code: <code><a href="https://bit.ly/39AgMxS">bit.ly/39AgMxS</a></code></li>
+            <li>Content from <em>Distributed Node.js</em> (O'Reilly)</li>
           </ul>
         </section>
 

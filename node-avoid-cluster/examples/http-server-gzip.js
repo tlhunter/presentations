@@ -7,7 +7,7 @@ server.register(compress);
 
 const HOST = process.env.HOST || '0.0.0.0';
 const PORT = process.env.PORT || 4080;
-const DATA = require('./data.json');
+const DATA = require(process.env.BIG ? './data-170kb.json' : './data-17kb.json');
 
 server.get('/', async (req, reply) => {
   // console.log(req.headers);
