@@ -183,7 +183,7 @@ section.intro img {
           <h3>Solution: Run more than one process</h3>
 
           <ul>
-            <li>Also called <em>Horizontal Scaling</em></li>
+            <li>Sometimes called <em>Horizontal Scaling</em></li>
             <li>In theory, two processes handle twice the load</li>
             <li>If one crashes, the other may survive</li>
           </ul>
@@ -312,7 +312,7 @@ console.log(`Worker ${process.pid} started`);</code></pre>
           <ul>
             <li>Dispatch requests to backend services</li>
             <li>Perform encoding duties (TLS, gzip)</li>
-            <li>Clean requests, sticky sessions, modify headers...</li>
+            <li>Clean requests, sticky sessions, modify headers, etc</li>
             <li>Route to multiple backends based on criteria</li>
           </ul>
 
@@ -354,8 +354,8 @@ backend web-api
         <section>
           <h3>Why prefer HAProxy over <code>cluster</code>?</h3>
           <ul>
-            <li>Smaller footprint (tiny C binary)</li>
             <li>Able to route requests between separate machines</li>
+            <li>Smaller footprint (tiny C binary)</li>
             <li>Offload complexity to code you don't maintain!
               <ul>
                 <li>More stable than Node.js app code</li>
@@ -375,9 +375,9 @@ backend web-api
 
           <ul>
             <li>Each test has HAProxy in front of Node.js</li>
-            <li>Either perform gzip/TLS in HAProxy or Node.js</li>
             <li>HAProxy introduces latency via network hop</li>
-            <li>Fastify, routing, not basic <code>http</code> module</li>
+            <li>Either perform gzip/TLS in HAProxy or Node.js</li>
+            <li>Fastify, routing, JSON, not just <code>http</code> module</li>
           </ul>
 
           <img height="200" src="images/perf-architecture.png" />
