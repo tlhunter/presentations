@@ -47,6 +47,8 @@ body {
   background-color: var(--omega);
 }
 .reveal p code,
+.reveal h2 code,
+.reveal h3 code,
 .reveal li code {
   background-color: var(--zeta);
   border-radius: 8px;
@@ -55,6 +57,7 @@ body {
 }
 .reveal li code,
 .reveal p code,
+.reveal h2 code,
 .reveal h3 code {
   font-size: 0.8em;
 }
@@ -139,40 +142,18 @@ section.intro img {
   </head>
   <body>
     <div id="twitter" class="floater"><a href="https://twitter.com/tlhunter">@tlhunter</a></div>
-    <!-- <div id="website" class="floater"><a href="https://intrinsic.com">intrinsic.com</a></div> -->
+    <!-- <div id="website" class="floater"><a href="https://lob.com">lob.com</a></div> -->
 
     <div class="reveal">
       <div class="slides">
 
         <section class="intro">
-          <h2>Friends don't let friends Cluster</h2>
+          <br /><!-- judge not -->
+          <br />
+          <h2>Friends don't let Friends Cluster</h2>
           <h3>Thomas Hunter II</h3>
-        </section>
-
-
-        <section>
-          <h3>Problem: Sometimes one isn't enough</h3>
-
-          <ul>
-            <li>A single process can get overwhelmed</li>
-            <li>Slow synchronous work blocks event loop</li>
-            <li>Perhaps a memory-heavy application</li>
-            <li>Non-zero chance that a process will crash</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3>Solution: Run more than one</h3>
-
-          <ul>
-            <li>Also called <em>Horizontal Scaling</em></li>
-            <li>In theory, two processes handle twice the load</li>
-            <li>If one crashes, the other may survive</li>
-          </ul>
-        </section>
-
-        <section>
-          <h3>But, what's the best way to<br />run multiple processes?</h3>
+          <br />
+          <p>Content from <em>Distributed Node.js (O'Reilly, ~2021)</em></p>
         </section>
 
 
@@ -187,35 +168,61 @@ section.intro img {
         </section>
 
 
+        <section id="chapter-intro">
+          <h3>Problem: One process isn't enough</h3>
+
+          <ul>
+            <li>A single process can get overwhelmed</li>
+            <li>CPU intensive work blocks event loop</li>
+            <li>Perhaps a memory-heavy application</li>
+            <li>Non-zero chance that a process will crash</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Solution: Run more than one process</h3>
+
+          <ul>
+            <li>Also called <em>Horizontal Scaling</em></li>
+            <li>In theory, two processes handle twice the load</li>
+            <li>If one crashes, the other may survive</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>What tools are available to<br />run multiple processes?</h3>
+        </section>
+
+
         <section id="chapter-1">
-          <h2>What is <code>cluster</code>?</h2>
+          <h2>Introducing <code>cluster</code></h2>
         </section>
 
 
         <section>
-          <h3>Cluster is a module built into Node.js</h3>
+          <h3><code>cluster</code> is a module built into Node.js</h3>
 
           <pre><code class="javascript">const cluster = require('cluster');</code></pre>
 
-          <img src="images/cluster-module.png" />
+          <img height="400" src="images/cluster-module.png" />
         </section>
 
 
         <section>
-          <h3>Cluster makes clustering easy</h3>
+          <h3><code>cluster</code> makes clustering easy</h3>
 
-<pre><code>const cluster = require('cluster');
+<pre><code class="javascript">const cluster = require('cluster');
 const http = require('http');
-const cool_value = Math.random();
+const COOL_VALUE = Math.random();
 
 if (cluster.isMaster) {
   console.log(`Master ${process.pid} is running`);
-  cluster.fork(); cluster.fork(); // Assume 2 CPU
+  cluster.fork(); cluster.fork(); // Assumes 2 CPUs
 } else {
-  http.createServer((req, res) =&gt; {
+  http.createServer((_req, res) =&gt; {
     res.writeHead(200);
     res.end('hello world\n');
-  }).listen(8000);
+  }).listen(3001);
   console.log(`Worker ${process.pid} started`);
 }</code></pre>
         </section>
@@ -224,60 +231,64 @@ if (cluster.isMaster) {
         <section>
           <h3>Docs are a little misleading</h3>
           <ul>
-            <li>The docs make it look like a single global</li>
-            <li>For example, is <code>cool_value</code> shared?</li>
+            <li>The docs make it <em>look</em> like a single global</li>
+            <li>For example, is <code>COOL_VALUE</code> shared?</li>
             <li>Why does the master load the <code>http</code> module?</li>
           </ul>
         </section>
 
 
         <section>
-          <h3>Cluster: A safer example</h3>
+          <h3><code>cluster</code>: A clearer example</h3>
 
-<pre><code>// master.js
+<pre><code class="javascript">// master.js
 const cluster = require('cluster');
 console.log(`Master ${process.pid} is running`);
 cluster.setupMaster({exec: __dirname+'/worker.js'});
 cluster.fork(); cluster.fork();</code></pre>
 
-<pre><code>// worker.js
-require('http').createServer((req, res) =&gt; {
+<pre><code class="javascript">// worker.js
+require('http').createServer((_req, res) =&gt; {
   res.writeHead(200);
   res.end('hello world\n');
-}).listen(8000);
+}).listen(3001);
 console.log(`Worker ${process.pid} started`);</code></pre>
         </section>
 
 
         <section>
-          <h3>How does Cluster work?</h3>
+          <h3>How does <code>cluster</code> work?</h3>
           <ul>
             <li>Each worker tells parent what port to listen</li>
             <li>Master sends messages round robin to workers</li>
             <li>If bind on port <code>0</code>, aka random high, it's consistent</li>
           </ul>
 
-          <pre>node,7649 ./master.js       # pstree output
-  ├─node,7656 server.js
-  │   ├─{node},15237
-  │   └─{node},15243        # six total children
-  ├─node,7657 server.js
-  │   ├─{node},15243
-  │   └─{node},15244        # six total children
-  ├─{node},15229
-  └─{node},15230            # six total children</pre>
+          <pre>node,7500 ./master.js     # pstree command output
+  ├─node,7600 server.js
+  │   ├─{node},7601
+  │   └─{node},7606
+  ├─node,7700 server.js
+  │   ├─{node},7701
+  │   └─{node},7706
+  ├─{node},7501
+  └─{node},7506
         </section>
 
 
         <section>
-          <h3>Why is Cluster undesirable?</h3>
+          <h3>Why is <code>cluster</code> undesirable?</h3>
           <ul>
+            <li>You can only route requests on the same machine!
+              <ul>
+                <li>Sharing RAM and CPU</li>
+              </ul>
+            </li>
             <li>You're running 3 Node.js instances instead of 2
               <ul>
                 <li>In practice, many apps load all modules in master</li>
               </ul>
             </li>
-            <li>You can only route requests on the same machine</li>
             <li>L4 routing, doesn't route long-lived requests
               <ul>
                 <li>L4 means it routes the TCP connection</li>
@@ -291,7 +302,7 @@ console.log(`Worker ${process.pid} started`);</code></pre>
 
 
         <section id="chapter-2">
-          <h2>What is a Reverse Proxy?</h2>
+          <h2>Introducing the Reverse Proxy</h2>
         </section>
 
 
@@ -299,13 +310,13 @@ console.log(`Worker ${process.pid} started`);</code></pre>
           <h3>A Reverse Proxy (like HAProxy) can...</h3>
 
           <ul>
-            <li>Dispatche requests to backend services</li>
+            <li>Dispatch requests to backend services</li>
             <li>Perform encoding duties (TLS, gzip)</li>
             <li>Clean requests, sticky sessions, modify headers...</li>
             <li>Route to multiple backends based on criteria</li>
           </ul>
 
-          <img src="images/reverse-proxy.png" />
+          <img height="280" src="images/reverse-proxy.png" />
         </section>
 
 
@@ -313,7 +324,7 @@ console.log(`Worker ${process.pid} started`);</code></pre>
           <h3>HAProxy Routing</h3>
 
           <ul>
-            <li>By default, HAProxy routes round robin (like Cluster)</li>
+            <li>By default routes using round robin (like <code>cluster</code>)</li>
             <li>Configuration is declarative</li>
             <li>HAProxy is extrememly efficient, C, event loop ;)</li>
           </ul>
@@ -323,7 +334,11 @@ console.log(`Worker ${process.pid} started`);</code></pre>
         <section>
           <h3>HAProxy Configuration</h3>
 
-          <pre><code>defaults
+          <ul>
+            <li>Basic round robin routing to two backends</li>
+          </ul>
+
+          <pre><code class="toml">defaults
   mode http
 
 frontend inbound
@@ -337,10 +352,10 @@ backend web-api
 
 
         <section>
-          <h3>Why prefer HAProxy over Cluster?</h3>
+          <h3>Why prefer HAProxy over <code>cluster</code>?</h3>
           <ul>
             <li>Smaller footprint (tiny C binary)</li>
-            <li>Able to route requests between machines</li>
+            <li>Able to route requests between separate machines</li>
             <li>Offload complexity to code you don't maintain!
               <ul>
                 <li>More stable than Node.js app code</li>
@@ -352,7 +367,7 @@ backend web-api
 
 
         <section id="chapter-3">
-          <h2>Performance comparison</h2>
+          <h2>Performance Comparison</h2>
         </section>
 
         <section>
@@ -363,12 +378,11 @@ backend web-api
             <li>Either perform gzip/TLS in HAProxy or Node.js</li>
             <li>HAProxy introduces latency via network hop</li>
             <li>Fastify, routing, not basic <code>http</code> module</li>
-            <li>Benchmark Code: <code><a href="https://bit.ly/39AgMxS">bit.ly/39AgMxS</a></code></li>
           </ul>
 
-          <img src="images/perf-architecture.png" />
+          <img height="200" src="images/perf-architecture.png" />
 
-          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1</small></p>
+          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1 | <code><a href="https://bit.ly/39AgMxS">bit.ly/39AgMxS</a></code></small></p>
         </section>
 
         <section>
@@ -380,7 +394,7 @@ backend web-api
 
           <img src="images/perf-tls-17.png" height="380" />
 
-          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1</small></p>
+          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1 | <code><a href="https://bit.ly/39AgMxS">bit.ly/39AgMxS</a></code></small></p>
         </section>
 
         <section>
@@ -392,7 +406,7 @@ backend web-api
 
           <img src="images/perf-tls-170.png" height="380" />
 
-          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1</small></p>
+          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1 | <code><a href="https://bit.ly/39AgMxS">bit.ly/39AgMxS</a></code></small></p>
         </section>
 
 
@@ -405,7 +419,7 @@ backend web-api
 
           <img src="images/perf-gzip-17.png" height="380" />
 
-          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1</small></p>
+          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1 | <code><a href="https://bit.ly/39AgMxS">bit.ly/39AgMxS</a></code></small></p>
         </section>
 
         <section>
@@ -417,7 +431,7 @@ backend web-api
 
           <img src="images/perf-gzip-170.png" height="380" />
 
-          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1</small></p>
+          <p><small>Node.js v13.6.0 | HAProxy v2.1.0 | fastify v2.12.0 | fastify-compress v2.0.1 | <code><a href="https://bit.ly/39AgMxS">bit.ly/39AgMxS</a></code></small></p>
         </section>
 
 
@@ -428,7 +442,7 @@ backend web-api
             <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
             <li>This presentation: <code><a href="http://bit.ly/3bBHuYY" title="Friends don't let friends Cluster">bit.ly/3bBHuYY</a></code></li>
             <li>Benchmark Code: <code><a href="https://bit.ly/39AgMxS">bit.ly/39AgMxS</a></code></li>
-            <li>Content from <em>Distributed Node.js</em> (O'Reilly)</li>
+            <li>Content from <em>Distributed Node.js (O'Reilly, ~2021)</em></li>
           </ul>
         </section>
 
