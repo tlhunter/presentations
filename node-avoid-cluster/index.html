@@ -16,14 +16,14 @@
     </script>
 <style>
 :root {
-  --zeta: #D9D0D0;
-  --alpha: #FFFFFF;
-  --beta: #8B3F8C;
-  --gamma: #A43CA6;
-  --delta: #8C4A81;
-  --epsilon: #00a8a8;
-  --omega: #222222;
-  --theta: #00a8a8;
+  --zeta: #ddd;
+  --alpha: #fff;
+  --beta: #a4a;
+  --gamma: #a4a;
+  --delta: #a4a;
+  --epsilon: #0aa;
+  --omega: #222;
+  --theta: #0aa;
 }
 body {
   background-color: var(--alpha);
@@ -185,9 +185,9 @@ section.intro img {
           <h3>Solution: Run more than one Process</h3>
 
           <ul>
-            <li>AKA <em>Horizontal Scaling</em></li>
-            <li>In theory, two processes handle twice the load</li>
-            <li>If one crashes, others may survive</li>
+            <li>Also known as Horizontal Scaling</li>
+            <li>In theory, two processes can handle twice the load</li>
+            <li>If one process crashes, others may survive</li>
           </ul>
         </section>
 
@@ -228,8 +228,8 @@ if (cluster.isMaster) {
           <h3>Docs make <code>cluster</code> look Magical</h3>
           <ul>
             <li>The docs make it <em>look</em> like a single global</li>
-            <li>For example, is <code>LUCKY_NUMBER</code> shared?</li>
-            <li>Why does the master load the <code>http</code> module?</li>
+            <li>Is the <code>LUCKY_NUMBER</code> variable shared?</li>
+            <li>Does the master process use the <code>http</code> module?</li>
           </ul>
         </section>
 
@@ -259,8 +259,8 @@ console.log(`Worker ${process.pid} started`);</code></pre>
           <ul>
             <!-- <li>One process for each worker, and one master</li> -->
             <li>Each Worker tells Master what port(s) to listen on</li>
-            <li>Master sends messages round robin to workers</li>
-            <li>If bind on port <code>0</code>, aka random high, it's consistent</li>
+            <li>Master sends messages, round robin, to workers</li>
+            <li>If listen on <code>0</code> (random high port) it's consistent</li>
           </ul>
           <img height="280" src="images/cluster-module.png" />
         </section>
@@ -288,12 +288,12 @@ console.log(`Worker ${process.pid} started`);</code></pre>
         <section>
           <h3>Why is <code>cluster</code> Undesirable?</h3>
           <ul>
-            <li>You can only route requests on the same machine!
+            <li>It only works with workers on the same machine!
               <ul>
-                <li>RAM and CPU contention</li>
+                <li>Still left with RAM and CPU contention</li>
               </ul>
             </li>
-            <li>You're running 3 Node.js instances instead of 2
+            <li>Runs 3 Node.js instances instead of 2
               <ul>
                 <li>In practice, many apps load all modules in master</li>
               </ul>
@@ -319,10 +319,10 @@ console.log(`Worker ${process.pid} started`);</code></pre>
           <h3>A Reverse Proxy can...</h3>
 
           <ul>
-            <li>Dispatch requests to backend services</li>
+            <li>Proxy incoming requests to backend services</li>
+            <li>Conditionally route to different backends</li>
             <li>Perform encoding duties (TLS, gzip)</li>
-            <li>Clean requests, sticky sessions, modify headers, etc</li>
-            <li>Route to multiple backends based on criteria</li>
+            <li>Sanitize requests, sticky sessions, modify headers</li>
           </ul>
 
           <img height="280" src="images/reverse-proxy.png" />
@@ -368,7 +368,7 @@ backend web-api
             <li>Smaller resource footprint</li>
             <li>Offload complexity to code you don't maintain!
               <ul>
-                <li>More stable than Node.js application code</li>
+                <li>Harder to crash than a Node.js application</li>
                 <li>Simplifies application (no gzip, TLS, certs)</li>
               </ul>
             </li>
