@@ -153,10 +153,11 @@ section.intro img {
           <h2>Friends don't let Friends Cluster</h2>
           <h3>Thomas Hunter II</h3>
           <br />
-          <p>Content from <em>Distributed Node.js (O'Reilly, ~2021)</em></p>
+          <p>Adapted from <em>Distributed Node.js (O'Reilly, ~2021)</em></p>
         </section>
 
 
+        <!--
         <section>
           <h2>Roadmap</h2>
 
@@ -166,32 +167,36 @@ section.intro img {
             <li><a href="#/chapter-3">Performance Comparison</a></li>
           </ol>
         </section>
+        -->
 
 
         <section id="chapter-intro">
-          <h3>Problem: One process isn't enough</h3>
+          <h3>Problem: One Process isn't Enough</h3>
 
           <ul>
             <li>A single process can get overwhelmed</li>
-            <li>CPU intensive work blocks event loop</li>
-            <li>Perhaps a memory-heavy application</li>
-            <li>Non-zero chance that a process will crash</li>
+            <li>CPU intensive work can block the event loop</li>
+            <li>App might have high memory requirement</li>
+            <li>Node.js processes can crash</li>
           </ul>
         </section>
 
         <section>
-          <h3>Solution: Run more than one process</h3>
+          <h3>Solution: Run more than one Process</h3>
 
           <ul>
-            <li>Sometimes called <em>Horizontal Scaling</em></li>
+            <li>AKA <em>Horizontal Scaling</em></li>
             <li>In theory, two processes handle twice the load</li>
-            <li>If one crashes, the other may survive</li>
+            <li>If one crashes, others may survive</li>
           </ul>
         </section>
 
+
+        <!--
         <section>
           <h3>What tools are available to<br />run multiple processes?</h3>
         </section>
+        -->
 
 
         <section id="chapter-1">
@@ -200,20 +205,11 @@ section.intro img {
 
 
         <section>
-          <h3><code>cluster</code> is a module built into Node.js</h3>
-
-          <pre><code class="javascript">const cluster = require('cluster');</code></pre>
-
-          <img height="400" src="images/cluster-module.png" />
-        </section>
-
-
-        <section>
-          <h3><code>cluster</code> makes clustering easy</h3>
+          <h3><code>cluster</code> makes Clustering Easy</h3>
 
 <pre><code class="javascript">const cluster = require('cluster');
 const http = require('http');
-const COOL_VALUE = Math.random();
+const LUCKY_NUMBER = Math.random();
 
 if (cluster.isMaster) {
   console.log(`Master ${process.pid} is running`);
@@ -221,7 +217,7 @@ if (cluster.isMaster) {
 } else {
   http.createServer((_req, res) =&gt; {
     res.writeHead(200);
-    res.end('hello world\n');
+    res.end(`Hello World! ${LUCKY_NUMBER}`);
   }).listen(3001);
   console.log(`Worker ${process.pid} started`);
 }</code></pre>
@@ -229,17 +225,17 @@ if (cluster.isMaster) {
 
 
         <section>
-          <h3>Docs are a little misleading</h3>
+          <h3>Docs make <code>cluster</code> look Magical</h3>
           <ul>
             <li>The docs make it <em>look</em> like a single global</li>
-            <li>For example, is <code>COOL_VALUE</code> shared?</li>
+            <li>For example, is <code>LUCKY_NUMBER</code> shared?</li>
             <li>Why does the master load the <code>http</code> module?</li>
           </ul>
         </section>
 
 
         <section>
-          <h3><code>cluster</code>: A clearer example</h3>
+          <h3>A Clearer <code>cluster</code> Example</h3>
 
 <pre><code class="javascript">// master.js
 const cluster = require('cluster');
@@ -248,40 +244,53 @@ cluster.setupMaster({exec: __dirname+'/worker.js'});
 cluster.fork(); cluster.fork();</code></pre>
 
 <pre><code class="javascript">// worker.js
+const LUCKY_NUMBER = Math.random();
 require('http').createServer((_req, res) =&gt; {
   res.writeHead(200);
-  res.end('hello world\n');
+  res.end(`Hello World! ${LUCKY_NUMBER}`);
 }).listen(3001);
 console.log(`Worker ${process.pid} started`);</code></pre>
         </section>
 
 
         <section>
-          <h3>How does <code>cluster</code> work?</h3>
+          <h3><code>cluster</code> uses N+1 Node.js Processes</h3>
+
           <ul>
-            <li>Each worker tells parent what port to listen</li>
+            <!-- <li>One process for each worker, and one master</li> -->
+            <li>Each Worker tells Master what port(s) to listen on</li>
             <li>Master sends messages round robin to workers</li>
             <li>If bind on port <code>0</code>, aka random high, it's consistent</li>
           </ul>
-
-          <pre>node,7500 ./master.js     # pstree command output
-  ├─node,7600 server.js
-  │   ├─{node},7601
-  │   └─{node},7606
-  ├─node,7700 server.js
-  │   ├─{node},7701
-  │   └─{node},7706
-  ├─{node},7501
-  └─{node},7506
+          <img height="280" src="images/cluster-module.png" />
         </section>
 
 
+        <!--
         <section>
-          <h3>Why is <code>cluster</code> undesirable?</h3>
+          <h3>How does <code>cluster</code> work?</h3>
+          <ul>
+          </ul>
+
+          <pre>node,7500 ./master.js     # pstree command output
+  ├─node,7600 worker.js
+  │   ├─{node},7601
+  │   └─{node},7606
+  ├─node,7700 worker.js
+  │   ├─{node},7701
+  │   └─{node},7706
+  ├─{node},7501
+  └─{node},7506</pre>
+        </section>
+        -->
+
+
+        <section>
+          <h3>Why is <code>cluster</code> Undesirable?</h3>
           <ul>
             <li>You can only route requests on the same machine!
               <ul>
-                <li>Sharing RAM and CPU</li>
+                <li>RAM and CPU contention</li>
               </ul>
             </li>
             <li>You're running 3 Node.js instances instead of 2
@@ -289,11 +298,11 @@ console.log(`Worker ${process.pid} started`);</code></pre>
                 <li>In practice, many apps load all modules in master</li>
               </ul>
             </li>
-            <li>L4 routing, doesn't route long-lived requests
+            <li>Layer 4 routing, doesn't route long-lived requests
               <ul>
-                <li>L4 means it routes the TCP connection</li>
-                <li>Consider the gRPC (over HTTP2) protocol</li>
-                <li>The master would stick to a single worker</li>
+                <li>Routes TCP connection, unaware of “messages”</li>
+                <li>Consider gRPC over HTTP2</li>
+                <li>All messages from a client go to same worker</li>
                 <!-- https://gist.github.com/thpham/114d20de8472b2cef966 -->
               </ul>
             </li>
@@ -307,7 +316,7 @@ console.log(`Worker ${process.pid} started`);</code></pre>
 
 
         <section>
-          <h3>A Reverse Proxy (like HAProxy) can...</h3>
+          <h3>A Reverse Proxy can...</h3>
 
           <ul>
             <li>Dispatch requests to backend services</li>
@@ -321,12 +330,13 @@ console.log(`Worker ${process.pid} started`);</code></pre>
 
 
         <section>
-          <h3>HAProxy Routing</h3>
+          <h3>HAProxy is a Reverse Proxy</h3>
 
           <ul>
-            <li>By default routes using round robin (like <code>cluster</code>)</li>
+            <li>Routes using round robin by default</li>
             <li>Configuration is declarative</li>
-            <li>HAProxy is extrememly efficient, C, event loop ;)</li>
+            <li>HAProxy is very efficient, event loop</li>
+            <li>13MB binary written in C</li>
           </ul>
         </section>
 
@@ -335,7 +345,7 @@ console.log(`Worker ${process.pid} started`);</code></pre>
           <h3>HAProxy Configuration</h3>
 
           <ul>
-            <li>Basic round robin routing to two backends</li>
+            <li>Basic routing to two backends</li>
           </ul>
 
           <pre><code class="toml">defaults
@@ -352,16 +362,17 @@ backend web-api
 
 
         <section>
-          <h3>Why prefer HAProxy over <code>cluster</code>?</h3>
+          <h3>Why Prefer HAProxy over <code>cluster</code>?</h3>
           <ul>
             <li>Able to route requests between separate machines</li>
-            <li>Smaller footprint (tiny C binary)</li>
+            <li>Smaller resource footprint</li>
             <li>Offload complexity to code you don't maintain!
               <ul>
-                <li>More stable than Node.js app code</li>
+                <li>More stable than Node.js application code</li>
                 <li>Simplifies application (no gzip, TLS, certs)</li>
               </ul>
             </li>
+            <li>Is both Layer 4 and Layer 7 aware</li>
           </ul>
         </section>
 
@@ -374,9 +385,9 @@ backend web-api
           <h3>Testing Approach</h3>
 
           <ul>
-            <li>Each test has HAProxy in front of Node.js</li>
+            <li>Each test puts HAProxy in front of Node.js</li>
             <li>HAProxy introduces latency via network hop</li>
-            <li>Either perform gzip/TLS in HAProxy or Node.js</li>
+            <li>Perform encoding in either HAProxy or Node.js</li>
             <li>Fastify, routing, JSON, not just <code>http</code> module</li>
           </ul>
 
@@ -389,7 +400,7 @@ backend web-api
           <h3>HAProxy vs Node.js: TLS Termination</h3>
 
           <ul>
-            <li>17kb payload: HAProxy is ~13% faster</li>
+            <li>17kb payload: HAProxy is ~13% higher throughput</li>
           </ul>
 
           <img src="images/perf-tls-17.png" height="380" />
@@ -401,7 +412,7 @@ backend web-api
           <h3>HAProxy vs Node.js: TLS Termination</h3>
 
           <ul>
-            <li>170kb payload: HAProxy is ~18% faster</li>
+            <li>170kb payload: HAProxy is ~18% higher throughput</li>
           </ul>
 
           <img src="images/perf-tls-170.png" height="380" />
@@ -414,7 +425,7 @@ backend web-api
           <h3>HAProxy vs Node.js: gzip Compression</h3>
 
           <ul>
-            <li>17kb payload: HAProxy is ~601% faster</li>
+            <li>17kb payload: HAProxy is ~601% higher throughput</li>
           </ul>
 
           <img src="images/perf-gzip-17.png" height="380" />
@@ -426,7 +437,7 @@ backend web-api
           <h3>HAProxy vs Node.js: gzip Compression</h3>
 
           <ul>
-            <li>170kb payload: HAProxy is ~407% faster</li>
+            <li>170kb payload: HAProxy is ~407% higher throughput</li>
           </ul>
 
           <img src="images/perf-gzip-170.png" height="380" />
@@ -442,7 +453,7 @@ backend web-api
             <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
             <li>This presentation: <code><a href="http://bit.ly/3bBHuYY" title="Friends don't let friends Cluster">bit.ly/3bBHuYY</a></code></li>
             <li>Benchmark Code: <code><a href="https://bit.ly/39AgMxS">bit.ly/39AgMxS</a></code></li>
-            <li>Content from <em>Distributed Node.js (O'Reilly, ~2021)</em></li>
+            <li>Adapted from <em>Distributed Node.js (O'Reilly, ~2021)</em></li>
           </ul>
         </section>
 
