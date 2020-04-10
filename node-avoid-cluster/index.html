@@ -169,6 +169,10 @@ section.intro img {
         </section>
         -->
 
+        <section>
+          <h3>Situation: You're Building a Web Service</h3>
+        </section>
+
 
         <section id="chapter-intro">
           <h3>Problem: One Process isn't Enough</h3>
@@ -192,11 +196,9 @@ section.intro img {
         </section>
 
 
-        <!--
         <section>
-          <h3>What tools are available to<br />run multiple processes?</h3>
+          <h3>What tools are available<br />to run multiple processes?</h3>
         </section>
-        -->
 
 
         <section id="chapter-1">
@@ -205,7 +207,7 @@ section.intro img {
 
 
         <section>
-          <h3><code>cluster</code> makes Clustering Easy</h3>
+          <h3><code>cluster</code> makes Scaling Easy</h3>
 
 <pre><code class="javascript">const cluster = require('cluster');
 const http = require('http');
@@ -218,18 +220,19 @@ if (cluster.isMaster) {
   http.createServer((_req, res) =&gt; {
     res.writeHead(200);
     res.end(`Hello World! ${LUCKY_NUMBER}`);
-  }).listen(3001);
+  }).listen(3000);
   console.log(`Worker ${process.pid} started`);
 }</code></pre>
         </section>
 
 
         <section>
-          <h3>Docs make <code>cluster</code> look Magical</h3>
+          <h3><code>cluster</code> makes Scaling <em>too</em> Easy</h3>
           <ul>
             <li>The docs make it <em>look</em> like a single global</li>
             <li>Is the <code>LUCKY_NUMBER</code> variable shared?</li>
             <li>Does the master process use the <code>http</code> module?</li>
+            <li>How does this thing actually work?!</li>
           </ul>
         </section>
 
@@ -248,7 +251,7 @@ const LUCKY_NUMBER = Math.random();
 require('http').createServer((_req, res) =&gt; {
   res.writeHead(200);
   res.end(`Hello World! ${LUCKY_NUMBER}`);
-}).listen(3001);
+}).listen(3000);
 console.log(`Worker ${process.pid} started`);</code></pre>
         </section>
 
@@ -286,23 +289,23 @@ console.log(`Worker ${process.pid} started`);</code></pre>
 
 
         <section>
-          <h3>Why is <code>cluster</code> Undesirable?</h3>
+          <h3><code>cluster</code> has its Shortcomings</h3>
           <ul>
-            <li>It only works with workers on the same machine!
+            <li>Master and Workers must be on the same machine!
               <ul>
                 <li>Still left with RAM and CPU contention</li>
               </ul>
             </li>
-            <li>Runs 3 Node.js instances instead of 2
+            <li>Requires 3 Node.js instances instead of 2
               <ul>
-                <li>In practice, many apps load all modules in master</li>
+                <li>In practice, many apps load all modules in Master</li>
               </ul>
             </li>
             <li>Layer 4 routing, doesn't route long-lived requests
               <ul>
                 <li>Routes TCP connection, unaware of “messages”</li>
-                <li>Consider gRPC over HTTP2</li>
-                <li>All messages from a client go to same worker</li>
+                <li>For example, gRPC over HTTP2</li>
+                <li>All calls from one client are sent to same Worker</li>
                 <!-- https://gist.github.com/thpham/114d20de8472b2cef966 -->
               </ul>
             </li>
@@ -325,7 +328,7 @@ console.log(`Worker ${process.pid} started`);</code></pre>
             <li>Sanitize requests, sticky sessions, modify headers</li>
           </ul>
 
-          <img height="280" src="images/reverse-proxy.png" />
+          <img height="80" src="images/reverse-proxy-high-level.png" />
         </section>
 
 
@@ -345,7 +348,7 @@ console.log(`Worker ${process.pid} started`);</code></pre>
           <h3>HAProxy Configuration</h3>
 
           <ul>
-            <li>Basic routing to two backends</li>
+            <li>Route incoming requests to two backends</li>
           </ul>
 
           <pre><code class="toml">defaults
@@ -358,6 +361,17 @@ frontend inbound
 backend web-api
   server web-api-1 localhost:3001
   server web-api-2 localhost:3002</code></pre>
+        </section>
+
+
+        <section>
+          <h3>HAProxy Configuration</h3>
+
+          <ul>
+            <li>Route incoming requests to two backends</li>
+          </ul>
+
+          <img height="280" src="images/reverse-proxy.png" />
         </section>
 
 
@@ -452,7 +466,7 @@ backend web-api
           <ul>
             <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
             <li>This presentation: <code><a href="http://bit.ly/3bBHuYY" title="Friends don't let friends Cluster">bit.ly/3bBHuYY</a></code></li>
-            <li>Benchmark Code: <code><a href="https://bit.ly/39AgMxS">bit.ly/39AgMxS</a></code></li>
+            <li>Benchmark repo: <code><a href="https://bit.ly/39AgMxS">bit.ly/39AgMxS</a></code></li>
             <li>Adapted from <em>Distributed Node.js (O'Reilly, ~2021)</em></li>
           </ul>
         </section>
