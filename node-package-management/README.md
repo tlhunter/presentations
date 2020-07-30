@@ -1,8 +1,8 @@
-## Friends don't let friends Cluster
+## Node.js Package Management
 
-This talk first covers the `cluster` module, how it works conceptually, and how it compares to the `child_process` module. Next, HAProxy is examined, which is a reverse proxy capable of solving the same problems as `cluster`. Finally, the performance of both technologies are measured, both in throughput and memory consumption.
+This talk covers package management in Node.js. It includes concepts like the module resolution algorithm, how deduplication results in both a logic and physical dependency tree, and how SemVer works when installing packages.
 
-Material is based on Thomas's upcoming book, tentatively titled _Distributed Node.js_.
+Material is based on Thomas's upcoming O'Reilly book, [Distributed Node.js](https://learning.oreilly.com/library/view/distributed-nodejs/9781492077282/).
 
 ## Biography
 
