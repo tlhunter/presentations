@@ -17,7 +17,7 @@
 <style>
 :root {
   --zeta: #FFFFFF;
-  --alpha: #EEEEEE;
+  --alpha: #EEFAFAEE;
   --beta: #94A64B;
   --gamma: #5B662E;
   --delta: #CCE667;
@@ -158,7 +158,7 @@ section.intro img {
           <h2>Node.js Package Management</h2>
           <h3>Thomas Hunter II</h3>
           <br />
-          <p>Adapted from <em>Distributed Node.js (O'Reilly)</em></p>
+          <p>Adapted from <em>Distributed Node.js (O'Reilly, ~2021)</em></p>
         </section>
 
 
@@ -173,57 +173,94 @@ section.intro img {
           </ol>
         </section>
 
-        <!--
-          BASICS
-          what are dependencies, interchangeable with package
-          typical application is > 95% package code - npx @intrinsic/loc
-          deps vs dev deps
-          package.json
-          install scripts
-          don't checkin packages, nor deploy from macOS
-          module vs package
-          semver
-          package range symbol
-
-          DEPENDENCY TREE
-          package-lock.json (yarn.lock YAML)
-          physical tree
-          logical tree
-          install multiple copy of same dependency
-          deduplication, infinite recursion
-          alternative with symlinks?
-          npm ls
-
-          MODULE RESOLUTION
-          require() looks at parent directories up to root
-          module resolution algorithm
-          instanceof breaks
-          globally installed packages aren't requireable
-
-          BEST PRACTICES
-          npm outdated
-          can but shouldn't require top level packages
-          can get orphaned packages - npx depcheck
-          malicious modules
-          favor fewer modules
-          favor npm over yarn
-        -->
-
 
         <section id="ch-basics">
           <h2>Basics</h2>
         </section>
 
 
+        <section>
+          <h3>What is a Dependency?</h3>
+
+          <ul>
+            <li>A Dependency is a Package that is depended upon</li>
+            <li>Package tarballs are hosted on npmjs.com</li>
+            <li>A Package makes an abstraction easily distributable</li>
+            <li>Provides functionality beneficial to multiple apps</li>
+            <li>Most applications have &gt;95% LoC in dependencies</li>
+          </ul>
+
+          <pre><code class="shell">$ npx @intrinsic/loc</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Dependency Installation</h3>
+
+          <ul>
+            <li>Dependencies are listed in <em>package.json</em></li>
+            <li>There are several CLI tools to manage packages</li>
+            <li>Applications can have deps and dev deps</li>
+            <li>App deps are extracted to <em>./node_modules</em></li>
+            <li>Install scripts, compilation, non-determinism</li>
+            <li>Don't check dependencies into version control</li>
+          </ul>
+
+          <pre><code class="shell">$ npm init
+$ npm install foo</code></pre>
+        </section>
+
+        <section>
+          <h3>Packages are Versioned</h3>
+
+<style>
+.semver-breaking {
+  background-color: #f2dede;
+}
+.semver-feature {
+  background-color: #fcf8e3;
+}
+.semver-bugfix {
+  background-color: #dff0d8;
+}
+</style>
+
+          <ul>
+            <li>Packages follow SemVer (Semantic Versioning)</li>
+            <li>MAJOR.MINOR.PATCH</li>
+            <li><span class="semver-breaking">Breaking</span>, <span class="semver-feature">New Feature</span>, <span class="semver-bugfix">Bug Fix</span></li>
+            <li>Normal: <span class="semver-breaking">1</span>.<span class="semver-feature">2</span>.<span class="semver-bugfix">3</span>, Zero: 0.<span class="semver-breaking">1</span>.<span class="semver-feature">2</span>, Double Zero: 0.0.<span class="semver-breaking">1</span></li>
+            <li>Exact version pinning: <code>pkg@1.2.3</code></li>
+            <li>New Feature only: <code>pkg@^1.2.3</code> 1.2.3 &lt; 2.0.0</li>
+            <li>Bug Fix only: <code>pkg@~1.2.3</code> 1.2.3 &lt; 1.3.0</li>
+          </ul>
+        </section>
+
         <section id="ch-tree">
           <h2>Dependency Tree</h2>
         </section>
 
+        <!--
+          physical tree
+          logical tree
+          install multiple copy of same dependency
+          deduplication, infinite recursion
+          pnpm alternative with symlinks
+          npm ls
+          package-lock.json (yarn.lock YAML)
+        -->
 
         <section id="ch-resolution">
           <h2>Module Resolution</h2>
         </section>
 
+        <!--
+          module vs package
+          require() looks at parent directories up to root
+          module resolution algorithm
+          instanceof breaks
+          globally installed packages aren't requireable
+        -->
 
         <section>
           <h3>Module Resolution Examples</h3>
@@ -245,6 +282,16 @@ section.intro img {
           <h2>Best Practices</h2>
         </section>
 
+        <!--
+          npm outdated
+          include file extensions when requiring
+          can but shouldn't require top level packages
+          can get orphaned packages - npx depcheck
+          malicious modules
+          favor fewer modules
+          favor npm over yarn
+          don't check package-lock.json in to module
+        -->
 
         <section>
           <h3>Get Some Code</h3>
@@ -267,7 +314,7 @@ section.intro img {
           <ul>
             <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
             <li>This presentation: <code><a href="http://bit.ly/TODO" title="Node.js Package Management">bit.ly/TODO</a></code></li>
-            <li>Adapted from <em><a href="https://learning.oreilly.com/library/view/distributed-nodejs/9781492077282/">Distributed Node.js (O'Reilly)</a></em></li>
+            <li>Adapted from <em><a href="https://learning.oreilly.com/library/view/distributed-nodejs/9781492077282/">Distributed Node.js (O'Reilly, ~2021)</a></em></li>
           </ul>
         </section>
 
