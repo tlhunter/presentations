@@ -187,7 +187,7 @@ section.intro img {
             <li>Package tarballs are hosted on npmjs.com</li>
             <li>A Package makes an abstraction easily distributable</li>
             <li>Provides functionality beneficial to multiple apps</li>
-            <li>Most applications have &gt;95% LoC in dependencies</li>
+            <li>Most applications have &gt;95% LoC in dependencies:</li>
           </ul>
 
           <pre><code class="shell">$ npx @intrinsic/loc</code></pre>
@@ -213,38 +213,99 @@ $ npm install foo</code></pre>
         <section>
           <h3>Packages are Versioned</h3>
 
-<style>
-.semver-breaking {
-  background-color: #f2dede;
-}
-.semver-feature {
-  background-color: #fcf8e3;
-}
-.semver-bugfix {
-  background-color: #dff0d8;
-}
-</style>
-
           <ul>
             <li>Packages follow SemVer (Semantic Versioning)</li>
-            <li>MAJOR.MINOR.PATCH</li>
-            <li><span class="semver-breaking">Breaking</span>, <span class="semver-feature">New Feature</span>, <span class="semver-bugfix">Bug Fix</span></li>
-            <li>Normal: <span class="semver-breaking">1</span>.<span class="semver-feature">2</span>.<span class="semver-bugfix">3</span>, Zero: 0.<span class="semver-breaking">1</span>.<span class="semver-feature">2</span>, Double Zero: 0.0.<span class="semver-breaking">1</span></li>
-            <li>Exact version pinning: <code>pkg@1.2.3</code></li>
-            <li>New Feature only: <code>pkg@^1.2.3</code> 1.2.3 &lt; 2.0.0</li>
-            <li>Bug Fix only: <code>pkg@~1.2.3</code> 1.2.3 &lt; 1.3.0</li>
+            <li>Definition of <code>MAJOR.MINOR.PATCH</code> changes:</li>
           </ul>
+
+          <img src="./images/semver-ranges.png" alt="How SemVer Major Minor Patch correlates to Breaking Feature Bugfix" />
         </section>
 
         <section id="ch-tree">
           <h2>Dependency Tree</h2>
         </section>
 
+
+        <section>
+          <h3>Logical Dependency Tree</h3>
+
+          <ul>
+            <li>Dependencies have Subdependencies</li>
+            <li>Transitive Dependencies</li>
+          </ul>
+
+          <pre><code>app@1.0.0
+├── qs@6.7.0
+├── pg@8.3.0
+└─┬ express@4.17.1
+  ├── qs@6.7.0
+  └── content-type@1.0.4
+</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Naive Physical Dependency Tree</h3>
+
+          <ul>
+            <li>Filesystem resembles tree</li>
+            <li>Notice how the <code>qs</code> module is duplicated</li>
+            <li>Circular references = infinite filesystem usage</li>
+          </ul>
+
+<pre><code class="bash">app/
+app/node_modules/qs
+app/node_modules/pg
+app/node_modules/express
+app/node_modules/express/node_modules
+app/node_modules/express/node_modules/qs
+app/node_modules/express/node_modules/content-type
+</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Deduplicated Physical Dependency Tree</h3>
+
+          <ul>
+            <li>Common modules are “hoisted” up</li>
+            <li>The duplicated <code>qs</code> module is removed</li>
+            <li>Still end up with duplicates in many situations</li>
+          </ul>
+
+<pre><code class="bash">app/
+app/node_modules/qs
+app/node_modules/pg
+app/node_modules/express
+app/node_modules/express/node_modules
+app/node_modules/express/node_modules/content-type
+</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Determining Pysical Tree is Complex</h3>
+
+          <ul>
+            <li>Situation #1: Compatible versions are deduped
+              <ul>
+                <li><code>foo</code> depends on <code>qs@~5.1.2</code></li>
+                <li><code>bar</code> depends on <code>qs@~5.1.4</code></li>
+                <li><code>qs@5.1.9</code> is installed and hoisted</li>
+              </ul>
+            </li>
+            <li>Situation #2: Incompatible versions aren't deduped
+              <ul>
+                <li><code>foo</code> depends on <code>qs@~5.1.2</code></li>
+                <li><code>bar</code> depends on <code>qs@~6.2.3</code></li>
+                <li><code>qs@6.2.9</code> is installed and hoisted</li>
+                <li><code>qs@5.1.9</code> is installed at <em>foo/node_modules/qs</em></li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
         <!--
-          physical tree
-          logical tree
-          install multiple copy of same dependency
-          deduplication, infinite recursion
           pnpm alternative with symlinks
           npm ls
           package-lock.json (yarn.lock YAML)
