@@ -155,6 +155,7 @@ section.intro img {
         <section class="intro">
           <br />
           <br />
+          <br />
           <h2>Node.js Package Management</h2>
           <h3>Thomas Hunter II</h3>
           <br />
@@ -163,7 +164,7 @@ section.intro img {
 
 
         <section>
-          <h2>Roadmap</h2>
+          <h2>Topics</h2>
 
           <ol>
             <li><a href="#/ch-basics">Basics</a></li>
@@ -176,17 +177,20 @@ section.intro img {
 
         <section id="ch-basics">
           <h2>Basics</h2>
+          <h3>How do dependencies work?</h3>
         </section>
 
 
         <section>
-          <h3>What is a Dependency?</h3>
+          <h3>Let's Define some Terms</h3>
 
           <ul>
-            <li>A Dependency is a Package that is depended upon</li>
-            <li>Package tarballs are hosted on npmjs.com</li>
-            <li>A Package makes an abstraction easily distributable</li>
-            <li>Provides functionality beneficial to multiple apps</li>
+            <li>A <em>Module</em> is a <code>require</code>-able file containing code</li>
+            <li>A <em>Package</em> is an archive of modules, supporting files</li>
+            <li>A <em>Dependency</em> is a Package that an app depends on</li>
+            <li>A Package makes it easy to distribute modules</li>
+            <li>Packages are hosted on npmjs.com</li>
+            <li>Packages should be beneficial to different apps</li>
             <li>Most applications have &gt;95% LoC in dependencies:</li>
           </ul>
 
@@ -201,13 +205,12 @@ section.intro img {
             <li>Dependencies are listed in <em>package.json</em></li>
             <li>There are several CLI tools to manage packages</li>
             <li>Applications can have deps and dev deps</li>
-            <li>App deps are extracted to <em>./node_modules</em></li>
+            <li>Dependencies are extracted to <em>node_modules/</em></li>
             <li>Install scripts, compilation, non-determinism</li>
-            <li>Don't check dependencies into version control</li>
           </ul>
 
-          <pre><code class="shell">$ npm init
-$ npm install foo</code></pre>
+          <pre><code class="shell">$ npm init # creates package.json, node_modules/
+$ npm install foo # installs node_modules/foo</code></pre>
         </section>
 
         <section>
@@ -223,6 +226,7 @@ $ npm install foo</code></pre>
 
         <section id="ch-tree">
           <h2>Dependency Tree</h2>
+          <h3>Where do those dependencies go?</h3>
         </section>
 
 
@@ -231,7 +235,7 @@ $ npm install foo</code></pre>
 
           <ul>
             <li>Dependencies have Subdependencies</li>
-            <li>Transitive Dependencies</li>
+            <li>Aka Transitive Dependencies</li>
           </ul>
 
           <pre><code>app@1.0.0
@@ -245,7 +249,7 @@ $ npm install foo</code></pre>
 
 
         <section>
-          <h3>Naive Physical Dependency Tree</h3>
+          <h3>Physical Dependency Tree, Naive</h3>
 
           <ul>
             <li>Filesystem resembles tree</li>
@@ -265,12 +269,12 @@ app/node_modules/express/node_modules/content-type
 
 
         <section>
-          <h3>Deduplicated Physical Dependency Tree</h3>
+          <h3>Physical Dependency Tree, Deduplicated</h3>
 
           <ul>
             <li>Common modules are “hoisted” up</li>
             <li>The duplicated <code>qs</code> module is removed</li>
-            <li>Still end up with duplicates in many situations</li>
+            <li>Cannot remove all duplicate packages from disk</li>
           </ul>
 
 <pre><code class="bash">app/
@@ -284,7 +288,7 @@ app/node_modules/express/node_modules/content-type
 
 
         <section>
-          <h3>Determining Pysical Tree is Complex</h3>
+          <h3>Determining Physical Tree is Complex</h3>
 
           <ul>
             <li>Situation #1: Compatible versions are deduped
@@ -305,23 +309,50 @@ app/node_modules/express/node_modules/content-type
           </ul>
         </section>
 
-        <!--
-          pnpm alternative with symlinks
-          npm ls
-          package-lock.json (yarn.lock YAML)
-        -->
+
+        <section>
+          <h3>Another Dependency Tree Approach</h3>
+
+          <ul>
+            <li>The <code><a href="https://pnpm.js.org/">pnpm</a></code> package manager uses symlinks</li>
+            <li>Creates a <em>node_modules/.pnpm</em> directory</li>
+            <li><em>node_modules/foo</em> symlinks to <em>.pnpm/foo@1.2.3</em></li>
+            <li>This approach results in minimal disk usage</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Install Determinism</h3>
+            <ul>
+              <li>Each <code>$ npm install</code> can grab different deps</li>
+              <li>Due to package ranges and package publishes</li>
+              <li>The npm CLI supports a <em>package-lock.json</em> file</li>
+              <li>This file enforces an exact dependency hierarchy</li>
+              <li>After a while <code>$ npm outdated</code> results appear</li>
+              <li>No lock can provide 100% deterministic filesystem</li>
+            </ul>
+        </section>
+
 
         <section id="ch-resolution">
           <h2>Module Resolution</h2>
+          <h3>How does <code>require()</code> work?</h3>
         </section>
 
-        <!--
-          module vs package
-          require() looks at parent directories up to root
-          module resolution algorithm
-          instanceof breaks
-          globally installed packages aren't requireable
-        -->
+
+        <section>
+          <h3>Overview of <code>require()</code></h3>
+
+          <ul>
+            <li>Paths beginning with <code>.</code> or <code>/</code> look for modules</li>
+            <li>Global packages aren't readily require-able</li>
+            <li>Looks for packages in <em>node_modules/</em> up to root</li>
+            <li>Determines the absolute path to module for caching</li>
+            <li>Requires a “Module Resolution Algorithm”</li>
+          </ul>
+        </section>
+
 
         <section>
           <h3>Module Resolution Examples</h3>
@@ -333,39 +364,74 @@ app/node_modules/express/node_modules/content-type
             <tr><td><code>require('./module.js')</code></td><td><em>/srv/server.js</em></td></tr>
             <tr><td><code>require('left-pad')</code></td><td><em>/srv/node_modules/left-pad/</em>,<br /><em>/node_modules/left-pad/</em></td></tr>
             <tr><td><code>require('foo.js')</code></td><td><em>/srv/node_modules/foo.js/</em>,<br /><em>/node_modules/foo.js/</em></td></tr>
-            <tr><td><code>require('./foo')</code></td><td><em>/srv/foo/index.js</em>, <em>/srv/foo.js</em>,<br /><em>/srv/foo.json</em>, <em>/srv/foo.node</em></td></tr>
+            <tr><td><code>require('./foo')</code></td><td><em>/srv/foo.js</em>, <em>/srv/foo.json</em>, <em>/srv/foo.node</em>,<br /><em>/srv/foo/index.js</em>, <em>/srv/foo/index.json</em>...</td></tr>
           </table>
+        </section>
 
+
+        <section>
+          <h3>Require Cache</h3>
+
+          <ul>
+            <li>Requiring the same file twice hits the cache</li>
+            <li>The cache is available at <code>require.cache</code></li>
+          </ul>
+
+          <img src="./images/require-cache.png" alt="Contents of the require.cache object" />
         </section>
 
 
         <section id="ch-practices">
           <h2>Best Practices</h2>
+          <h3>What's the best way to use this stuff?</h3>
         </section>
 
-        <!--
-          npm outdated
-          include file extensions when requiring
-          can but shouldn't require top level packages
-          can get orphaned packages - npx depcheck
-          malicious modules
-          favor fewer modules
-          favor npm over yarn
-          don't check package-lock.json in to module
-        -->
 
         <section>
-          <h3>Get Some Code</h3>
+          <h3>Deployment and Workflow</h3>
 
           <ul>
-            <li>U liek code?</li>
+            <li>Use <code>$ npm outdated</code> to list outdated packages</li>
+            <li>Use a tool like <code>$ npx depcheck</code> to find orphans</li>
+            <li>Don't check <em>package-lock.json</em> into repository</li>
+            <li>Never deploy dev dependencies to production</li>
           </ul>
+        </section>
 
-          <pre><code class="json">"dependencies": {
-  "fastify": "^2.11.0",
-  "ioredis": "~4.14.1",
-  "pg": "7.17.1"
-}</code></pre>
+
+        <section>
+          <h3>Requiring Packages</h3>
+
+          <ul>
+            <li>Specify file extensions when using <code>require()</code>
+              <ul>
+                <li>This eliminates ambiguity, broken refactors</li>
+                <li>Also helps with code completion</li>
+              </ul>
+            </li>
+            <li>Never <code>require()</code> a transitive dependency
+              <ul>
+                <li>It will work today and break tomorrow</li>
+              </ul>
+            </li>
+            <li><code>instanceof</code> breaks for packages at different paths
+              <ul>
+                <li>Duck typing or <code>Symbol.hasInstance</code> can help</li>
+              </ul>
+            </li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>Security Concerns</h3>
+
+          <ul>
+            <li>Use the fewest number of packages possible</li>
+            <li>Favor modules with few or zero dependencies</li>
+            <li>Consult <code>$ npm ls</code> after installing new packages</li>
+            <li><a href="https://medium.com/intrinsic/common-node-js-attack-vectors-the-dangers-of-malicious-modules-863ae949e7e8">Malicious Modules</a>, typo squatting are a real threat</li>
+          </ul>
         </section>
 
 
