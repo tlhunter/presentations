@@ -252,7 +252,7 @@ $ npm install foo # installs node_modules/foo</code></pre>
           <h3>Physical Dependency Tree, Naive</h3>
 
           <ul>
-            <li>Filesystem resembles tree</li>
+            <li>Filesystem resembles logical tree</li>
             <li>Notice how the <code>qs</code> module is duplicated</li>
             <li>Circular references = infinite filesystem usage</li>
           </ul>
@@ -361,7 +361,7 @@ app/node_modules/express/node_modules/content-type
 
           <table class="shrink">
             <tr><td><code>require('url')</code></td><td>Core <em>url</em> module</td></tr>
-            <tr><td><code>require('./module.js')</code></td><td><em>/srv/server.js</em></td></tr>
+            <tr><td><code>require('./module.js')</code></td><td><em>/srv/module.js</em></td></tr>
             <tr><td><code>require('left-pad')</code></td><td><em>/srv/node_modules/left-pad/</em>,<br /><em>/node_modules/left-pad/</em></td></tr>
             <tr><td><code>require('foo.js')</code></td><td><em>/srv/node_modules/foo.js/</em>,<br /><em>/node_modules/foo.js/</em></td></tr>
             <tr><td><code>require('./foo')</code></td><td><em>/srv/foo.js</em>, <em>/srv/foo.json</em>, <em>/srv/foo.node</em>,<br /><em>/srv/foo/index.js</em>, <em>/srv/foo/index.json</em>...</td></tr>
@@ -393,7 +393,7 @@ app/node_modules/express/node_modules/content-type
           <ul>
             <li>Use <code>$ npm outdated</code> to list outdated packages</li>
             <li>Use a tool like <code>$ npx depcheck</code> to find orphans</li>
-            <li>Don't check <em>package-lock.json</em> into repository</li>
+            <li>Don't check <em>node_modules/</em> into repository</li>
             <li>Never deploy dev dependencies to production</li>
           </ul>
         </section>
@@ -440,7 +440,7 @@ app/node_modules/express/node_modules/content-type
 
           <ul>
             <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
-            <li>This presentation: <code><a href="http://bit.ly/TODO" title="Node.js Package Management">bit.ly/TODO</a></code></li>
+            <li>This presentation: <code><a href="https://bit.ly/3gXZWgx" title="Node.js Package Management">bit.ly/3gXZWgx</a></code></li>
             <li>Adapted from <em><a href="https://learning.oreilly.com/library/view/distributed-nodejs/9781492077282/">Distributed Node.js (O'Reilly, ~2021)</a></em></li>
           </ul>
         </section>
