@@ -56,7 +56,7 @@ body {
 .reveal h3 code {
   font-size: 0.8em;
 }
-.reveal li code a {
+.reveal code a {
   color: var(--beta);
 }
 
@@ -142,7 +142,7 @@ body {
   </head>
   <body>
     <div id="twitter" class="floater"><a href="https://twitter.com/tlhunter">@tlhunter</a></div>
-    <div id="website" class="floater"><a href="https://intrinsic.com">intrinsic.com</a></div>
+    <div id="website" class="floater"><a href="http://bit.ly/34SHToF"><img src="../_meta/distributed-nodejs.png" width="200" /></a></div>
 
     <div class="reveal">
       <div class="slides">
@@ -151,7 +151,7 @@ body {
           <h2>Atomicity in Redis</h2>
           <h3>Thomas Hunter II</h3>
 
-          <img src="./images/intrinsic.svg" width="30%" style="background: transparent; box-shadow: none;" />
+          <p><br />I'm writing <em>Distributed Systems with Node.js</em>:<br /><code><a href="http://bit.ly/34SHToF">bit.ly/34SHToF</a></code></p>
         </section>
 
 
@@ -554,6 +554,7 @@ const LOBBY = 'lobby-elo-1500', GAME = 'game-hash';
         </section>
 
 
+        <!--
         <section>
           <h3>Intrinsic: Node.js Security Policies</h3>
 
@@ -571,7 +572,7 @@ routes.post('/server/stats', policy =&gt; {
   policy.redis.allowInfoSection(REDIS, 'memory');
 });</code></pre>
         </section>
-
+        -->
 
 
         <section id="section-outro" data-background="./images/redisconf-bg.jpg" data-state="redisconf-theme">
@@ -579,7 +580,7 @@ routes.post('/server/stats', policy =&gt; {
 
           <ul>
             <li>Follow me: <code><a href="https://twitter.com/tlhunter">@tlhunter</a></code></li>
-            <li>About Intrinsic: <code><a href="https://intrinsic.com">intrinsic.com</a></code></li>
+            <li><em>Distributed Systems with Node.js</em>: <code><a href="http://bit.ly/34SHToF">bit.ly/34SHToF</a></code></li>
             <li>This presentation: <code><a href="http://bit.ly/redis-atomicity">bit.ly/redis-atomicity</a></code></li>
           </ul>
         </section>
