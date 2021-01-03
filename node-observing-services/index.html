@@ -17,13 +17,13 @@
 <style>
 :root {
   --zeta: #FFFFFF;
-  --alpha: #EEFAFAEE;
-  --beta: #94A64B;
-  --gamma: #5B662E;
-  --delta: #CCE667;
-  --epsilon: #39401D;
-  --omega: #222222;
-  --theta: #4F5928;
+  --alpha: #F5F5F5;
+  --beta: #F5F5F5;
+  --gamma: #E61739;
+  --delta: #E61739;
+  --epsilon: #242633;
+  --omega: #242633;
+  --theta: #000000;
 }
 body {
   background-color: var(--alpha);
@@ -45,13 +45,14 @@ body {
   padding: 10px 17px;
   border-radius: 10px;
   background-color: var(--omega);
+  color: var(--alpha);
 }
 .reveal p code,
 .reveal table code,
 .reveal h2 code,
 .reveal h3 code,
 .reveal li code {
-  background-color: var(--zeta);
+  background-color: var(--omega);
   border-radius: 8px;
   color: var(--beta);
   padding: 2px 10px;
@@ -79,7 +80,6 @@ body {
 .reveal h3,
 .attention {
   color: var(--epsilon);
-  text-shadow: 0px 1px 5px var(--zeta);
 }
 .reveal h3 {
   color: var(--gamma);
@@ -122,9 +122,7 @@ section.intro img {
 
 #twitter {
   left: 20px;
-}
-#website {
-  right: 20px;
+  font-family: "Anonymous Pro", monospace;
 }
 .floater {
   position: absolute;
@@ -135,9 +133,17 @@ section.intro img {
 .floater, .floater a {
   color: var(--gamma);
   text-decoration: none;
-  font-family: "Source Sans Pro", Helvetica, sans-serif;
+  font-family: "Anonymous Pro", monospace;
   font-weight: 600;
-  text-shadow: 0px 1px 5px var(--zeta);
+}
+
+.reveal a.bitly {
+  font-family: "Anonymous Pro", monospace;
+  font-weight: bold;
+  background-color: var(--epsilon);
+  border-radius: 8px;
+  color: var(--zeta);
+  padding: 2px 10px;
 }
 
 .reveal table.shrink {
@@ -158,7 +164,7 @@ section.intro img {
           <h2>Logging, Metrics, and Tracing with Node.js</h2>
           <h3>Thomas Hunter II</h3>
           <br />
-          <p>Adapted from <em>Distributed Systems with Node.js</em>:<br /><code><a href="http://bit.ly/34SHToF">bit.ly/34SHToF</a></code></p>
+          <p>Adapted from <em>Distributed Systems with Node.js</em>:<br /><a class="bitly" href="http://bit.ly/34SHToF">bit.ly/34SHToF</a></p>
         </section>
 
 
@@ -355,9 +361,9 @@ server.addHook('onRequest', async (req) =&gt; {
           <h3>Fin</h3>
 
           <ul>
-            <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
-            <li>This presentation: <code><a href="https://bit.ly/TODO" title="Logging, Metrics, and Tracing with Node.js">bit.ly/TODO</a></code></li>
-            <li><em>Distributed Systems with Node.js</em>: <code><a href="http://bit.ly/34SHToF">bit.ly/34SHToF</a></code></li>
+            <li>Follow me: <a class="bitly" href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></li>
+            <li>This presentation: <a class="bitly" href="http://bit.ly/2MymKJD" title="Logging, Metrics, and Tracing with Node.js">bit.ly/2MymKJD</a></li>
+            <li><em>Distributed Systems with Node.js</em>: <a class="bitly" href="http://bit.ly/34SHToF">bit.ly/34SHToF</a></li>
           </ul>
         </section>
 
