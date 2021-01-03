@@ -1,0 +1,328 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Logging, Metrics, and Tracing with Node.js by @tlhunter</title>
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css">
+    <link rel="stylesheet" href="lib/css/hybrid.css">
+    <script>
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+<style>
+:root {
+  --zeta: #FFFFFF;
+  --alpha: #EEFAFAEE;
+  --beta: #94A64B;
+  --gamma: #5B662E;
+  --delta: #CCE667;
+  --epsilon: #39401D;
+  --omega: #222222;
+  --theta: #4F5928;
+}
+body {
+  background-color: var(--alpha);
+}
+
+.reveal {
+  color: var(--epsilon);
+}
+.reveal pre {
+  font-size: 0.7em;
+  width: 100%;
+  box-shadow: none;
+}
+.reveal pre .nl {
+  color: var(--epsilon);
+}
+.reveal pre code {
+  max-height: 500px;
+  padding: 10px 17px;
+  border-radius: 10px;
+  background-color: var(--omega);
+}
+.reveal p code,
+.reveal table code,
+.reveal h2 code,
+.reveal h3 code,
+.reveal li code {
+  background-color: var(--zeta);
+  border-radius: 8px;
+  color: var(--beta);
+  padding: 2px 10px;
+}
+.reveal li code,
+.reveal p code,
+.reveal h2 code,
+.reveal h3 code {
+  font-size: 0.8em;
+}
+.reveal li code a {
+  color: var(--beta);
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  text-transform: initial;
+}
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.attention {
+  color: var(--epsilon);
+  text-shadow: 0px 1px 5px var(--zeta);
+}
+.reveal h3 {
+  color: var(--gamma);
+}
+
+.reveal section img {
+  border: none;
+  background: transparent;
+  border: 0px;
+  box-shadow: none;
+}
+.reveal blockquote {
+  text-align: left;
+  width: auto;
+  padding: 0.5em 1em;
+}
+.reveal blockquote .author {
+  text-align: right;
+}
+.reveal a {
+  color: var(--omega);
+}
+.reveal a:hover {
+  color: var(--theta);
+}
+.reveal pre .highlight {
+  color: var(--delta);
+}
+
+.reveal .progress span {
+  background-color: var(--delta);
+}
+.reveal .controls {
+  color: var(--gamma);
+}
+
+section.intro img {
+  margin-top: 40px;
+}
+
+#twitter {
+  left: 20px;
+}
+#website {
+  right: 20px;
+}
+.floater {
+  position: absolute;
+  bottom: 20px;
+  font-size: 3em;
+  z-index: 1;
+}
+.floater, .floater a {
+  color: var(--gamma);
+  text-decoration: none;
+  font-family: "Source Sans Pro", Helvetica, sans-serif;
+  font-weight: 600;
+  text-shadow: 0px 1px 5px var(--zeta);
+}
+
+.reveal table.shrink {
+  font-size: 30px;
+}
+</style>
+  </head>
+  <body>
+    <div id="twitter" class="floater"><a href="https://twitter.com/tlhunter">@tlhunter</a></div>
+
+    <div class="reveal">
+      <div class="slides">
+
+        <section class="intro">
+          <br />
+          <br />
+          <br />
+          <h2>Logging, Metrics, and Tracing with Node.js</h2>
+          <h3>Thomas Hunter II</h3>
+          <br />
+          <p>Adapted from <em>Distributed Systems with Node.js</em>:<br /><code><a href="http://bit.ly/34SHToF">bit.ly/34SHToF</a></code></p>
+        </section>
+
+
+        <section>
+          <h2>Topics</h2>
+
+          <ol>
+            <li><a href="#/ch-intro">Intro</a></li>
+            <li><a href="#/ch-logging">Logging</a></li>
+            <li><a href="#/ch-metrics">Metrics</a></li>
+            <li><a href="#/ch-tracing">Tracing</a></li>
+          </ol>
+        </section>
+
+
+        <section id="ch-basics">
+          <h2>Intro</h2>
+          <h3>Why does Observability Matter?</h3>
+        </section>
+
+        <section>
+          <h3>Sometimes you want specific info</h3>
+
+          <ul>
+            <li>Why did this thing break</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Sometimes you want aggregate info</h3>
+
+          <ul>
+            <li>How long does the profile update endpoint take</li>
+            <li>What is the success vs failure rate of the new endpoint</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Sometimes need to associate info</h3>
+
+          <ul>
+            <li>How to tell that service Y broke service X</li>
+          </ul>
+        </section>
+
+        <section id="ch-logging">
+          <h2>Logging</h2>
+          <h3>The <code>console.log()</code> of the cloud</h3>
+        </section>
+
+        <!--
+        common pattern to have a global logger and a request logger
+        winston
+        request ID
+        screenshot from Kibana
+        send logs via UDP versus stdout
+        well-formed JSON object, not too nested
+        -->
+
+        <section>
+          <h3>Logging Solutions</h3>
+
+          <ul>
+            <li>Splunk</li>
+            <li>DataDog Logs</li>
+            <li>Sumo Logic</li>
+            <li>ELK: Elasticsearch + Logstash + Kibana</li>
+          </ul>
+        </section>
+
+        <section id="ch-metrics">
+          <h2>Metrics</h2>
+          <h3>Aggregate, numeric data</h3>
+        </section>
+
+        <!--
+        events for each request, throughput
+        request timing
+        error rate
+        important to understand app
+        real world numbers versus benchmarks
+        log vs metrics? I prefer metrics for things that can trigger pages
+        -->
+
+        <section>
+          <h3>Metrics Solutions</h3>
+
+          <ul>
+            <li>DataDog Metrics</li>
+            <li>Prometheus + Grafana</li>
+            <li>StatsD + Graphite + Grafana</li>
+          </ul>
+        </section>
+
+        <section id="ch-tracing">
+          <h2>Distributed Tracing</h2>
+          <h3>Inter-service communication</h3>
+        </section>
+
+        <!--
+        example payload from book
+        request id, span id
+        DataDog APM, New Relic
+        -->
+
+        <section>
+          <h3>Tracing Solutions</h3>
+
+          <ul>
+            <li>DataDog APM</li>
+            <li>New Relic</li>
+            <li><a href="https://zipkin.io/">Zipkin</a></li>
+            <li><a href="https://www.jaegertracing.io/">Jaeger</a></li>
+            <li><a href="https://opentelemetry.io/">OpenTelemetry</a></li>
+          </ul>
+        </section>
+
+        <section id="final">
+          <h3>Fin</h3>
+
+          <ul>
+            <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
+            <li>This presentation: <code><a href="https://bit.ly/TODO" title="Logging, Metrics, and Tracing with Node.js">bit.ly/TODO</a></code></li>
+            <li><em>Distributed Systems with Node.js</em>: <code><a href="http://bit.ly/34SHToF">bit.ly/34SHToF</a></code></li>
+          </ul>
+        </section>
+
+
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      Reveal.initialize({
+        transition: 'none',
+        center: true,
+        touch: true,
+        controls: false,
+        controlsTutorial: false,
+        controlsLayout: 'edges',
+        controlsBackArrows: 'visible',
+        history: true,
+        help: false,
+        dependencies: [
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        ]
+      });
+    </script>
+    <script type='text/javascript'>
+      var Countly = {
+        q: [['track_sessions'], ['track_pageview'], ['track_clicks']],
+        app_key: 'eef3b12942f938d7be826186be17930bd522d315',
+        url: 'https://analytics.phobosrising.co'
+      };
+      (function() {
+         var cly = document.createElement('script'); cly.type = 'text/javascript';
+         cly.async = true; cly.src = '/scripts/countly.min.js';
+         cly.onload = function(){Countly.init()};
+         var s = document.getElementsByTagName('script')[0];
+         s.parentNode.insertBefore(cly, s);
+      })();
+    </script>
+    <noscript><img src='https://analytics.phobosrising.co/pixel.png?app_key=d91922f2a4106e3f1b2851a7bc4852606a289177&begin_session=1'/></noscript>
+  </body>
+</html>
