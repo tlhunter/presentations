@@ -209,14 +209,55 @@ section.intro img {
           <h3>The <code>console.log()</code> of the cloud</h3>
         </section>
 
-        <!--
-        common pattern to have a global logger and a request logger
-        winston
-        request ID
-        screenshot from Kibana
-        send logs via UDP versus stdout
-        well-formed JSON object, not too nested
-        -->
+        <section>
+          <h3>What are logs?</h3>
+
+          <ul>
+            <li>An approach for extracing data from a program</li>
+            <li>Often well-structured JSON data instead of free text</li>
+            <li>Logs often have associated <em>severity</em> levels</li>
+            <li>Severity allows filtering, e.g. ignore <code>debug</code> in prod</li>
+            <li>Logs can write to stdout, fs, stream over network</li>
+            <li><code>winston</code> is a popular npm package for logging</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Winston Example</h3>
+
+          <pre><code class="javascript">import winston from 'winston';
+export default winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  defaultMeta: { env: process.env.NODE_ENV,
+                 app: 'profile-service' },
+  transports: [
+    new winston.transports.File({
+      filename: '/var/log/nodeapp.log'
+    }),
+    new winston.transports.Console()
+  ]
+});</code></pre>
+        </section>
+
+        <section>
+          <h3>Common Logging Conventions</h3>
+
+          <ul>
+            <li>Global logger, and request-specific logger</li>
+            <li>A Request UUID can associate related logs</li>
+          </ul>
+
+          <pre><code class="javascript">import Logger from '../logger.mjs';
+import UUID from 'uuid';
+
+server.addHook('onRequest', async (req) =&gt; {
+  const request_id = UUID.v4();
+  req.logger = Logger.child({ request_id });
+  const { url, method } = req.context.config;
+  req.logger.info('on_request', { url, method });
+});</code></pre>
+        </section>
 
         <section>
           <h3>Logging Solutions</h3>
@@ -226,6 +267,15 @@ section.intro img {
             <li>DataDog Logs</li>
             <li>Sumo Logic</li>
             <li>ELK: Elasticsearch + Logstash + Kibana</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>What does Logging look like?</h3>
+
+          <ul>
+            <li>TODO: Screenshot of Kibana</li>
+            <li>TODO: Quick query explanation</li>
           </ul>
         </section>
 
@@ -253,6 +303,15 @@ section.intro img {
           </ul>
         </section>
 
+        <section>
+          <h3>What do Metrics look like?</h3>
+
+          <ul>
+            <li>TODO: Screenshot of Grafana</li>
+            <li>TODO: Quick query explanation</li>
+          </ul>
+        </section>
+
         <section id="ch-tracing">
           <h2>Distributed Tracing</h2>
           <h3>Inter-service communication</h3>
@@ -275,6 +334,22 @@ section.intro img {
             <li><a href="https://opentelemetry.io/">OpenTelemetry</a></li>
           </ul>
         </section>
+
+        <section>
+          <h3>What does Tracing look like?</h3>
+
+          <ul>
+            <li>TODO: Screenshot of Zipkin</li>
+          </ul>
+        </section>
+
+        <!--
+          conclusion
+          playbook
+          anticipate application failure
+          application health
+          perf regressions
+        -->
 
         <section id="final">
           <h3>Fin</h3>
