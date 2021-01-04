@@ -77,11 +77,11 @@ body {
 }
 .reveal h1,
 .reveal h2,
-.reveal h3,
 .attention {
   color: var(--epsilon);
 }
-.reveal h3 {
+.reveal h3,
+.reveal h4 {
   color: var(--gamma);
 }
 
@@ -176,6 +176,7 @@ section.intro img {
             <li><a href="#/ch-logging">Logging</a></li>
             <li><a href="#/ch-metrics">Metrics</a></li>
             <li><a href="#/ch-tracing">Tracing</a></li>
+            <li><a href="#/ch-bp">Best Practices</a></li>
           </ol>
         </section>
 
@@ -197,8 +198,8 @@ section.intro img {
           <h3>Sometimes you want aggregate info</h3>
 
           <ul>
-            <li>How long does the profile update endpoint take</li>
-            <li>What is the success vs failure rate of the new endpoint</li>
+            <li>How long does the profile update endpoint take?</li>
+            <li>What's the failure rate of the new endpoint?</li>
           </ul>
         </section>
 
@@ -206,7 +207,8 @@ section.intro img {
           <h3>Sometimes need to associate info</h3>
 
           <ul>
-            <li>How to tell that service Y broke service X</li>
+            <li>How are these myriad of services connected?</li>
+            <li>Which service is to blame for a failure?</li>
           </ul>
         </section>
 
@@ -223,7 +225,7 @@ section.intro img {
             <li>Often well-structured JSON data instead of free text</li>
             <li>Logs often have associated <em>severity</em> levels</li>
             <li>Severity allows filtering, e.g. ignore <code>debug</code> in prod</li>
-            <li>Logs can write to stdout, fs, stream over network</li>
+            <li>Logs can write to stdout, fs, network UDP</li>
             <li><code>winston</code> is a popular npm package for logging</li>
           </ul>
         </section>
@@ -269,10 +271,10 @@ server.addHook('onRequest', async (req) =&gt; {
           <h3>Logging Solutions</h3>
 
           <ul>
-            <li>Splunk</li>
-            <li>DataDog Logs</li>
-            <li>Sumo Logic</li>
-            <li>ELK: Elasticsearch + Logstash + Kibana</li>
+            <li><a href="https://www.elastic.co/what-is/elk-stack">ELK: Elasticsearch + Logstash + Kibana</a></li>
+            <li><a href="https://www.splunk.com/">Splunk</a></li>
+            <li><a href="https://docs.datadoghq.com/logs/">DataDog Logs</a></li>
+            <li><a href="https://www.sumologic.com/">Sumo Logic</a></li>
           </ul>
         </section>
 
@@ -290,42 +292,63 @@ server.addHook('onRequest', async (req) =&gt; {
           <h3>Aggregate, numeric data</h3>
         </section>
 
+        <section>
+          <h3>What are metrics?</h3>
+
+          <ul>
+            <li>Numeric, time-series data, to understand app health</li>
+            <li>Metrics usually have a name and sometimes tags</li>
+            <li>Real world info that benchmarks can't tell you</li>
+            <li>Request throughput, request timing, memory usage</li>
+            <li>Response status codes, endpoint popularity</li>
+            <li>Money spent, user churn, ad clicks</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Example Code</h3>
+
+          <pre><code class="javascript">import StatsD from 'statsd-client';
+const statsd = new StatsD({ prefix: 'myapp.' });
+
+server.addHook('onResponse', async (req, reply) =&gt; {
+  statsd.timing('request.time',
+    reply.getResponseTime());
+  statsd.increment('request.status',
+    reply.raw.statusCode);
+  statsd.increment('request.method',
+    req.context.config.method);
+});</code></pre>
+        </section>
+
         <!--
-        events for each request, throughput
-        request timing
-        error rate
-        important to understand app
-        real world numbers versus benchmarks
-        log vs metrics? I prefer metrics for things that can trigger pages
+          cardinality concerns
         -->
 
         <section>
           <h3>Metrics Solutions</h3>
 
           <ul>
-            <li>DataDog Metrics</li>
-            <li>Prometheus + Grafana</li>
-            <li>StatsD + Graphite + Grafana</li>
+            <li><a href="http://graphiteapp.org/">StatsD + Graphite + Grafana</a></li>
+            <li><a href="https://prometheus.io/docs/visualization/grafana/">Prometheus + Grafana</a></li>
+            <li><a href="https://docs.datadoghq.com/developers/metrics/">DataDog Metrics</a></li>
           </ul>
         </section>
 
         <section>
           <h3>What do Metrics look like?</h3>
 
-          <ul>
-            <li>TODO: Screenshot of Grafana</li>
-            <li>TODO: Quick query explanation</li>
-          </ul>
+          <img src="./images/metrics.png" />
         </section>
 
         <section id="ch-tracing">
           <h2>Distributed Tracing</h2>
-          <h3>Inter-service communication</h3>
+          <h3>Inter-Service Communication</h3>
         </section>
 
         <!--
         example payload from book
-        request id, span id
+        call back to request id, span id
         DataDog APM, New Relic
         -->
 
@@ -333,11 +356,11 @@ server.addHook('onRequest', async (req) =&gt; {
           <h3>Tracing Solutions</h3>
 
           <ul>
-            <li>DataDog APM</li>
-            <li>New Relic</li>
             <li><a href="https://zipkin.io/">Zipkin</a></li>
             <li><a href="https://www.jaegertracing.io/">Jaeger</a></li>
-            <li><a href="https://opentelemetry.io/">OpenTelemetry</a></li>
+            <li>(<a href="https://opentelemetry.io/">OpenTelemetry</a>)</li>
+            <li><a href="https://docs.datadoghq.com/tracing/">DataDog APM</a></li>
+            <li><a href="https://newrelic.com/">New Relic</a></li>
           </ul>
         </section>
 
@@ -349,16 +372,38 @@ server.addHook('onRequest', async (req) =&gt; {
           </ul>
         </section>
 
+        <section id="ch-bp">
+          <h2>Best Practices</h2>
+          <h3>When to use this stuff</h3>
+        </section>
+
+        <section>
+          <h3>Logs vs Metrics</h3>
+
+          <ul>
+            <li>Numeric data in both can be graphed</li>
+            <li>I like to put actionable numeric data into metrics</li>
+            <li>Anything that triggers a page in metrics</li>
+            <li>Logs are nice for capturing stack traces</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Create Playbooks</h3>
+
+          <ul>
+            <li>A playbook contains instructions for an emergency</li>
+          </ul>
+        </section>
+
         <!--
-          conclusion
-          playbook
           anticipate application failure
           application health
           perf regressions
         -->
 
         <section id="final">
-          <h3>Fin</h3>
+          <h4>Logging, Metrics, and Tracing with Node.js</h4>
 
           <ul>
             <li>Follow me: <a class="bitly" href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></li>
