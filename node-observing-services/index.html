@@ -77,12 +77,17 @@ body {
 }
 .reveal h1,
 .reveal h2,
+.reveal h5,
 .attention {
   color: var(--epsilon);
 }
 .reveal h3,
 .reveal h4 {
   color: var(--gamma);
+}
+.reveal h5 {
+  font-size: 0.8em;
+  margin-bottom: 0px;
 }
 
 .reveal section img {
@@ -221,11 +226,15 @@ section.intro img {
           <h3>What are logs?</h3>
 
           <ul>
-            <li>An approach for extracing data from a program</li>
+            <li>A way to extrace state from a program</li>
             <li>Often well-structured JSON data instead of free text</li>
-            <li>Logs often have associated <em>severity</em> levels</li>
+            <li>Logs often have associated <em>severity</em> levels
+              <ul>
+                <li>error, warn, info, http, verbose, debug, silly</li>
+              </ul>
+            </li>
             <li>Severity allows filtering, e.g. ignore <code>debug</code> in prod</li>
-            <li>Logs can write to stdout, fs, network UDP</li>
+            <li>Logs can written to stdout, file system, network</li>
             <li><code>winston</code> is a popular npm package for logging</li>
           </ul>
         </section>
@@ -257,14 +266,32 @@ export default winston.createLogger({
           </ul>
 
           <pre><code class="javascript">import Logger from '../logger.mjs';
-import UUID from 'uuid';
 
 server.addHook('onRequest', async (req) =&gt; {
-  const request_id = UUID.v4();
+  const request_id = crypto.randomUUID();
   req.logger = Logger.child({ request_id });
   const { url, method } = req.context.config;
   req.logger.info('on_request', { url, method });
 });</code></pre>
+        </section>
+
+        <section>
+          <h3>Example contextual log</h3>
+
+          <ul>
+            <li>Help the code archeologist diagnose a bug</li>
+          </ul>
+
+          <pre><code class="javascript">try {
+  await database.save(record);
+} catch (err) {
+  logger.error('db_persist_error', {
+    error: err.message,
+    stack: err.stack,
+    id: record.id
+  });
+  return reply.code(500).send('unable to save');
+}</code></pre>
         </section>
 
         <section>
@@ -279,12 +306,12 @@ server.addHook('onRequest', async (req) =&gt; {
         </section>
 
         <section>
-          <h3>What does Logging look like?</h3>
+          <h3>What do logs look like?</h3>
 
-          <ul>
-            <li>TODO: Screenshot of Kibana</li>
-            <li>TODO: Quick query explanation</li>
-          </ul>
+          <pre><code class="plain">message:"handled request" AND status_code&gt;=500</code></pre>
+
+          <img src="images/logs-elk-kql.png" height="360" />
+
         </section>
 
         <section id="ch-metrics">
@@ -321,10 +348,6 @@ server.addHook('onResponse', async (req, reply) =&gt; {
 });</code></pre>
         </section>
 
-        <!--
-          cardinality concerns
-        -->
-
         <section>
           <h3>Metrics Solutions</h3>
 
@@ -338,7 +361,9 @@ server.addHook('onResponse', async (req, reply) =&gt; {
         <section>
           <h3>What do Metrics look like?</h3>
 
-          <img src="./images/metrics.png" />
+          <pre><code class="plain">aliasByNode(web-api.inbound.response_code.*, 4)</code></pre>
+
+          <p><img src="./images/metrics.png" /></p>
         </section>
 
         <section id="ch-tracing">
@@ -346,11 +371,25 @@ server.addHook('onResponse', async (req, reply) =&gt; {
           <h3>Inter-Service Communication</h3>
         </section>
 
-        <!--
-        example payload from book
-        call back to request id, span id
-        DataDog APM, New Relic
-        -->
+        <section>
+          <h3>What is Distributed Tracing?</h3>
+
+          <ul>
+            <li>Associates related requests across services</li>
+            <li>Generate and pass around a Request UUID</li>
+            <li>Additional IDs are generated for req/res pairs</li>
+            <li>These IDs are passed around as HTTP headers</li>
+            <li>Info is sent to a central management service</li>
+            <li>Allows request hierarchy to be visualized</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Example Tracing Implementation</h3>
+          <!--
+          example payload from book
+          -->
+        </section>
 
         <section>
           <h3>Tracing Solutions</h3>
@@ -367,7 +406,17 @@ server.addHook('onResponse', async (req, reply) =&gt; {
         <section>
           <h3>What does Tracing look like?</h3>
 
-          <img src="./images/zipkin.png" height="450px" />
+          <p>Zipkin looks like a hierarchy</p>
+
+          <p><img src="./images/zipkin.png" height="350" /></p>
+        </section>
+
+        <section>
+          <h3>What does Tracing look like?</h3>
+
+          <p>Datadog APM looks like a perf timeline</p>
+
+          <p><img src="./images/tracing-datadog-apm.png" height="350" /></p>
         </section>
 
         <section id="ch-bp">
@@ -387,10 +436,25 @@ server.addHook('onResponse', async (req, reply) =&gt; {
         </section>
 
         <section>
-          <h3>Create Playbooks</h3>
+          <h3>Create Runbooks</h3>
 
           <ul>
-            <li>A playbook contains instructions for an emergency</li>
+            <li>A Runbook contains instructions for an emergency</li>
+            <li>Make sure your Runbooks are searchable</li>
+            <li>Add log error messages to Runbooks</li>
+            <li>Monitoring/Alterting tools support Runbook URLs</li>
+          </ul>
+        </section>
+
+        <section>
+          <h3>Only track what you need</h3>
+
+          <ul>
+            <li>Most metric solutions have cardinality limits</li>
+            <li>Services may charge by throughput</li>
+            <li>Many tools support sampling</li>
+            <li>Consider discarding data unless an error is involved</li>
+            <li>Data retention is important, i.e. delete after 30 days</li>
           </ul>
         </section>
 
