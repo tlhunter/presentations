@@ -177,7 +177,7 @@ section.intro img {
           <h2>Topics</h2>
 
           <ol>
-            <li><a href="#/ch-intro">Intro</a></li>
+            <!-- <li><a href="#/ch-intro">Intro</a></li> -->
             <li><a href="#/ch-logging">Logging</a></li>
             <li><a href="#/ch-metrics">Metrics</a></li>
             <li><a href="#/ch-tracing">Tracing</a></li>
@@ -186,6 +186,7 @@ section.intro img {
         </section>
 
 
+        <!--
         <section id="ch-basics">
           <h2>Intro</h2>
           <h3>Why does Observability Matter?</h3>
@@ -217,16 +218,18 @@ section.intro img {
           </ul>
         </section>
 
+        -->
+
         <section id="ch-logging">
           <h2>Logging</h2>
           <h3>The <code>console.log()</code> of the cloud</h3>
         </section>
 
         <section>
-          <h3>What are logs?</h3>
+          <h3>What is Logging?</h3>
 
           <ul>
-            <li>A way to extrace state from a program</li>
+            <li>A way to extract granular state from a program</li>
             <li>Often well-structured JSON data instead of free text</li>
             <li>Logs often have associated <em>severity</em> levels
               <ul>
@@ -270,6 +273,7 @@ export default winston.createLogger({
 server.addHook('onRequest', async (req) =&gt; {
   const request_id = crypto.randomUUID();
   req.logger = Logger.child({ request_id });
+
   const { url, method } = req.context.config;
   req.logger.info('on_request', { url, method });
 });</code></pre>
@@ -285,7 +289,7 @@ server.addHook('onRequest', async (req) =&gt; {
           <pre><code class="javascript">try {
   await database.save(record);
 } catch (err) {
-  logger.error('db_persist_error', {
+  req.logger.error('db_persist_error', {
     error: err.message,
     stack: err.stack,
     id: record.id
@@ -320,7 +324,7 @@ server.addHook('onRequest', async (req) =&gt; {
         </section>
 
         <section>
-          <h3>What are metrics?</h3>
+          <h3>What are Metrics?</h3>
 
           <ul>
             <li>Numeric, time-series data, to understand app health</li>
@@ -329,6 +333,7 @@ server.addHook('onRequest', async (req) =&gt; {
             <li>Request throughput, request timing, memory usage</li>
             <li>Response status codes, endpoint popularity</li>
             <li>Money spent, user churn, ad clicks</li>
+            <li>Metrics are usually cheaper than logs</li>
           </ul>
         </section>
 
@@ -341,9 +346,9 @@ const statsd = new StatsD({ prefix: 'myapp.' });
 server.addHook('onResponse', async (req, reply) =&gt; {
   statsd.timing('request.time',
     reply.getResponseTime());
-  statsd.increment('request.status',
+  statsd.increment('request.status.' +
     reply.raw.statusCode);
-  statsd.increment('request.method',
+  statsd.increment('request.method.' +
     req.context.config.method);
 });</code></pre>
         </section>
@@ -361,9 +366,9 @@ server.addHook('onResponse', async (req, reply) =&gt; {
         <section>
           <h3>What do Metrics look like?</h3>
 
-          <pre><code class="plain">aliasByNode(web-api.inbound.response_code.*, 4)</code></pre>
-
           <p><img src="./images/metrics.png" /></p>
+
+          <pre><code class="plain">aliasByNode(myapp.request.status.*, 4)</code></pre>
         </section>
 
         <section id="ch-tracing">
@@ -377,15 +382,51 @@ server.addHook('onResponse', async (req, reply) =&gt; {
           <ul>
             <li>Associates related requests across services</li>
             <li>Generate and pass around a Request UUID</li>
-            <li>Additional IDs are generated for req/res pairs</li>
+            <li>Span IDs are generated for req/res pairs</li>
             <li>These IDs are passed around as HTTP headers</li>
             <li>Info is sent to a central management service</li>
             <li>Allows request hierarchy to be visualized</li>
+            <li>Which service was slow/failed for given request</li>
+            <li>Bonus: Attach Request UUID to request logger</li>
           </ul>
         </section>
 
         <section>
           <h3>Example Tracing Implementation</h3>
+
+          <pre><code class="javascript">import Zipkin from 'zipkin-lite';
+import fastify from 'fastify';
+import fetch from 'node-fetch';
+
+const zipkin = new Zipkin({
+  zipkinHost: 'localhost:9411',
+  serviceName: 'shallow-api',
+  servicePort: 80,
+  serviceIp: '1.2.3.4',
+});
+const server = fastify();
+
+server.addHook('onRequest', zipkin.onRequest());
+server.addHook('onResponse', zipkin.onResponse()); </code></pre>
+        </section>
+
+        <section>
+          <h3>Example Tracing Implementation</h3>
+
+          <pre><code class="javascript">server.get('/widgets/:id', async (req, reply) =&gt; {
+  console.log('REQUEST ID:', req.zipkin.trace);
+  req.zipkin.setName('get_widget');
+
+  // ...
+  const zreq = req.zipkin.prepare();
+  const url = 'http://example.org/foo/42';
+  const result = await fetch(url, {
+    headers: zreq.headers });
+  zreq.complete('GET', url);
+  // ...
+
+  return result.text();
+});</code></pre>
           <!--
           example payload from book
           -->
@@ -439,10 +480,10 @@ server.addHook('onResponse', async (req, reply) =&gt; {
           <h3>Create Runbooks</h3>
 
           <ul>
-            <li>A Runbook contains instructions for an emergency</li>
+            <li>Succinct emergency instruction for groggy engineers</li>
             <li>Make sure your Runbooks are searchable</li>
-            <li>Add log error messages to Runbooks</li>
-            <li>Monitoring/Alterting tools support Runbook URLs</li>
+            <li>Add logged error messages to Runbooks</li>
+            <li>Alterting tools often support URLs to Runbooks</li>
           </ul>
         </section>
 
@@ -451,8 +492,12 @@ server.addHook('onResponse', async (req, reply) =&gt; {
 
           <ul>
             <li>Most metric solutions have cardinality limits</li>
-            <li>Services may charge by throughput</li>
-            <li>Many tools support sampling</li>
+            <li>Services charge by throughput in some manner</li>
+            <li>Many tools support sampling
+              <ul>
+                <li>I.e. only save logs for 1% of requests</li>
+              </ul>
+            </li>
             <li>Consider discarding data unless an error is involved</li>
             <li>Data retention is important, i.e. delete after 30 days</li>
           </ul>
