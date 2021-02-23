@@ -190,21 +190,39 @@ section.intro img {
 
         <section>
           <h3>What are GitHub Actions?</h3>
+
+          <ul>
+            <li>A way to run Continuous Integration</li>
+            <li>Super convenient if your code is on GitHub</li>
+            <li>Allocate a VM and run code when triggered</li>
+            <li>2,000 mins for Free, 3,000 mins for Pro, etc</li>
+          </ul>
         </section>
 
 
         <section>
           <h3>Continuous Integration as Code</h3>
+
+          <ul>
+            <li>GitHub Actions are defined using YAML files</li>
+            <li>They live at <code>.github/workflows/*.yml</code></li>
+            <li>Changes are committed just like your code</li>
+            <li>Not too different from Travis CI / Circle CI</li>
+            <li>No need to create a new account, auth, configure</li>
+          </ul>
         </section>
 
 
         <section>
-          <h3>Composability</h3>
-        </section>
+          <h3>Composability and Secrets</h3>
 
-
-        <section>
-          <h3>Pulling in Binaries</h3>
+          <ul>
+            <li>Workflows are made up of smaller steps</li>
+            <li>Steps pull in external GitHub repos</li>
+            <li><code>uses: actions/setup-node@v2.1.4</code></li>
+            <li><code>github.com/actions/setup-node</code></li>
+            <li>Secrets are values defined in project settings</li>
+          </ul>
         </section>
 
 
@@ -214,17 +232,54 @@ section.intro img {
 
 
         <section>
+          <h3>Pull Request Boilerplate</h3>
+
+          <p><code>.github/workflows/pr-lint-test.yml</code></p>
+
+          <pre><code class="yaml">name: Linter and Acceptance Tests
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual execution
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Repo 
+        uses: actions/checkout@v2</code></pre>
+        </section>
+
+
+        <section>
           <h3>Stage: Install Dev Deps</h3>
+
+          <pre><code class="yaml">      - name: Set up Node.js
+        uses: actions/setup-node@v2.1.4
+        with:
+          node-version: 14.15.3
+        
+      - name: Install Dependencies
+        run: npm install</code></pre>
         </section>
 
 
         <section>
           <h3>Stage: Run a Linter</h3>
+
+          <pre><code>      - name: Run Linter
+        run: npm run lint</code></pre>
         </section>
 
 
         <section>
           <h3>Stage: Execute Tests</h3>
+
+          <pre><code>  - name: Build and Start Docker Containers
+    run: docker-compose -f docker-compose.yml up -d
+
+  - name: Run Acceptance Tests
+    run: TARGET=http://localhost:1337 npm test</code></pre>
         </section>
 
 
@@ -234,17 +289,70 @@ section.intro img {
 
 
         <section>
-          <h3>Stage: Install Prod Deps</h3>
+          <h3>Branch Merge Boilerplate</h3>
+
+          <p><code>.github/workflows/main-deploy.yml</code></p>
+
+          <pre><code class="yaml">name: Deploy to Production
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual execution
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Repo 
+        uses: actions/checkout@v2</code></pre>
         </section>
 
 
         <section>
-          <h3>Stage: Build Container</h3>
+          <h3>Stage: Build and Push Image</h3>
+
+          <pre><code class="yaml">      - name: Set up Docker Builder
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and Push to Container Registry
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: |
+            registry.foo.com/x/y:latest
+            registry.foo.com/x/y:sha-${{github.sha}}</code></pre>
         </section>
 
 
         <section>
-          <h3>Stage: Deploy App Image</h3>
+          <h3>Stage: Deploy Part 1</h3>
+
+          <pre><code class="yaml">  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy app to VPS
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Stage: Deploy Part 2</h3>
+
+          <pre><code class="yaml">          script: |
+            docker pull registry.foo.com/x/y:latest
+            docker stop my-app || true
+            docker rm my-app || true
+            docker run -d \
+              -e SOMEVAL=${{ secrets.SOMEVAL }} \
+              --name my-app \
+              registry.foo.com/x/y:latest \
+              node /srv/app.js</code></pre>
         </section>
 
 
