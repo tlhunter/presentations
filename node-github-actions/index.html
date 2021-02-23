@@ -1,0 +1,310 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GitHub Actions for Node.js Apps by @tlhunter</title>
+    <link rel="stylesheet" href="css/reveal.css">
+    <link rel="stylesheet" href="css/theme/black.css">
+    <link rel="stylesheet" href="lib/css/hybrid.css">
+    <script>
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match(/print-pdf/gi) ? 'css/print/pdf.css' : 'css/print/paper.css';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    </script>
+<style>
+
+:root {
+  --alpha: #F5F5F5;
+  --beta: #F5F5F5;
+  --gamma: #1739E6;
+  --delta: #1739E6;
+  --epsilon: #242633;
+  --omega: #242633;
+}
+body {
+  background-color: var(--alpha);
+}
+.reveal {
+  color: var(--epsilon);
+}
+.reveal pre {
+  font-size: 0.7em;
+  width: 100%;
+  box-shadow: none;
+}
+.reveal pre .nl {
+  color: var(--epsilon);
+}
+.reveal pre code {
+  max-height: 500px;
+  padding: 10px 17px;
+  border-radius: 10px;
+  background-color: var(--omega);
+  color: var(--alpha);
+}
+.reveal p code,
+.reveal table code,
+.reveal h2 code,
+.reveal h3 code,
+.reveal li code {
+  background-color: var(--omega);
+  border-radius: 8px;
+  color: var(--beta);
+  padding: 2px 10px;
+}
+.reveal li code,
+.reveal p code,
+.reveal h2 code,
+.reveal h3 code {
+  font-size: 0.8em;
+}
+.reveal li code a {
+  color: var(--beta);
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  text-transform: initial;
+}
+.reveal h1,
+.reveal h2,
+.reveal h5,
+.attention {
+  color: var(--epsilon);
+}
+.reveal h3,
+.reveal h4 {
+  color: var(--gamma);
+}
+.reveal h5 {
+  font-size: 0.8em;
+  margin-bottom: 0px;
+}
+
+.reveal section img {
+  border: none;
+  background: transparent;
+  border: 0px;
+  box-shadow: none;
+}
+.reveal blockquote {
+  text-align: left;
+  width: auto;
+  padding: 0.5em 1em;
+}
+.reveal blockquote .author {
+  text-align: right;
+}
+.reveal a {
+  color: var(--omega);
+}
+.reveal a:hover {
+  color: var(--epsilon);
+}
+.reveal pre .highlight {
+  color: var(--delta);
+}
+
+.reveal .progress span {
+  background-color: var(--delta);
+}
+.reveal .controls {
+  color: var(--gamma);
+}
+
+section.intro img {
+  margin-top: 40px;
+}
+
+#twitter {
+  left: 20px;
+  font-family: "Anonymous Pro", monospace;
+}
+.floater {
+  position: absolute;
+  bottom: 20px;
+  font-size: 3em;
+  z-index: 1;
+}
+.floater, .floater a {
+  color: var(--gamma);
+  text-decoration: none;
+  font-family: "Anonymous Pro", monospace;
+  font-weight: 600;
+}
+
+.reveal a.bitly {
+  font-family: "Anonymous Pro", monospace;
+  font-weight: bold;
+  background-color: var(--epsilon);
+  border-radius: 8px;
+  color: var(--alpha);
+  padding: 2px 10px;
+}
+
+.reveal table.shrink {
+  font-size: 30px;
+}
+</style>
+  </head>
+  <body>
+    <div id="twitter" class="floater"><a href="https://twitter.com/tlhunter">@tlhunter</a></div>
+
+    <div class="reveal">
+      <div class="slides">
+
+        <section class="intro">
+          <br />
+          <br />
+          <br />
+          <h2>GitHub Actions for Node.js Apps</h2>
+          <h3>Thomas Hunter II</h3>
+          <br />
+          <p>Inspired by <em>Distributed Systems with Node.js</em>:<br /><a class="bitly" href="http://bit.ly/34SHToF">bit.ly/34SHToF</a></p>
+        </section>
+
+
+        <section>
+          <h2>Topics</h2>
+
+          <ol>
+            <li><a href="#/ch-overview">Overview</a></li>
+            <li><a href="#/ch-pull-request">Pull Request</a></li>
+            <li><a href="#/ch-merge-main">Merge to Main</a></li>
+            <li><a href="#/ch-bp">Best Practices</a></li>
+          </ol>
+        </section>
+
+
+        <section id="ch-overview">
+          <h2>An Overview of GitHub Actions</h2>
+        </section>
+
+
+        <section>
+          <h3>What are GitHub Actions?</h3>
+        </section>
+
+
+        <section>
+          <h3>Continuous Integration as Code</h3>
+        </section>
+
+
+        <section>
+          <h3>Composability</h3>
+        </section>
+
+
+        <section>
+          <h3>Pulling in Binaries</h3>
+        </section>
+
+
+        <section id="ch-pull-request">
+          <h2>Pull Request</h2>
+        </section>
+
+
+        <section>
+          <h3>Stage: Install Dev Deps</h3>
+        </section>
+
+
+        <section>
+          <h3>Stage: Run a Linter</h3>
+        </section>
+
+
+        <section>
+          <h3>Stage: Execute Tests</h3>
+        </section>
+
+
+        <section id="ch-merge-main">
+          <h2>Merging to Main</h2>
+        </section>
+
+
+        <section>
+          <h3>Stage: Install Prod Deps</h3>
+        </section>
+
+
+        <section>
+          <h3>Stage: Build Container</h3>
+        </section>
+
+
+        <section>
+          <h3>Stage: Deploy App Image</h3>
+        </section>
+
+
+        <section id="ch-bp">
+          <h2>Best Practices</h2>
+        </section>
+
+
+        <section>
+          <h3>TODO</h3>
+        </section>
+
+
+        <section id="final">
+          <h4>GitHub Actions for Node.js Apps</h4>
+
+          <ul>
+            <li>Follow me: <a class="bitly" href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></li>
+            <li>This presentation: <a class="bitly" href="http://bit.ly/TODO">bit.ly/TODO</a></li>
+            <li><em>Distributed Systems with Node.js</em>: <a class="bitly" href="http://bit.ly/34SHToF">bit.ly/34SHToF</a></li>
+          </ul>
+        </section>
+
+
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.js"></script>
+
+    <script>
+      Reveal.initialize({
+        transition: 'none',
+        center: true,
+        touch: true,
+        controls: false,
+        controlsTutorial: false,
+        controlsLayout: 'edges',
+        controlsBackArrows: 'visible',
+        history: true,
+        help: false,
+        dependencies: [
+          { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+        ]
+      });
+    </script>
+    <script type='text/javascript'>
+      var Countly = {
+        q: [['track_sessions'], ['track_pageview'], ['track_clicks']],
+        app_key: 'eef3b12942f938d7be826186be17930bd522d315',
+        url: 'https://analytics.phobosrising.co'
+      };
+      (function() {
+         var cly = document.createElement('script'); cly.type = 'text/javascript';
+         cly.async = true; cly.src = '/scripts/countly.min.js';
+         cly.onload = function(){Countly.init()};
+         var s = document.getElementsByTagName('script')[0];
+         s.parentNode.insertBefore(cly, s);
+      })();
+    </script>
+    <noscript><img src='https://analytics.phobosrising.co/pixel.png?app_key=d91922f2a4106e3f1b2851a7bc4852606a289177&begin_session=1'/></noscript>
+  </body>
+</html>
