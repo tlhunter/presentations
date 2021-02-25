@@ -19,8 +19,8 @@
 :root {
   --alpha: #F5F5F5;
   --beta: #F5F5F5;
-  --gamma: #1739E6;
-  --delta: #1739E6;
+  --gamma: #0366d6;
+  --delta: #0366d6;
   --epsilon: #242633;
   --omega: #242633;
 }
@@ -235,6 +235,13 @@ section.intro img {
 
 
         <section>
+          <h3>Workflow Results are Contextual</h3>
+
+          <img src="images/pr-check.png" />
+        </section>
+
+
+        <section>
           <h3>Pull Request Boilerplate</h3>
 
           <p><code>.github/workflows/pr-lint-test.yml</code></p>
@@ -255,7 +262,7 @@ jobs:
 
 
         <section>
-          <h3>Stage: Install Dev Deps</h3>
+          <h3>Steps: Prepare Node.js, Install Dev Deps</h3>
 
           <pre><code class="yaml">      - name: Set up Node.js
         uses: actions/setup-node@v2.1.4
@@ -268,23 +275,32 @@ jobs:
 
 
         <section>
-          <h3>Stage: Run a Linter</h3>
+          <h3>Step: Run a Linter</h3>
 
           <pre><code>      - name: Run Linter
         run: npm run lint</code></pre>
 
-          <!-- TODO: Screenshots -->
+          <img src="images/pr-linter-result.png" />
         </section>
 
 
         <section>
-          <h3>Stage: Execute Tests</h3>
+          <h3>Steps: Build Docker, Run Tests</h3>
 
           <pre><code>  - name: Build and Start Docker Containers
     run: docker-compose -f docker-compose.yml up -d
 
   - name: Run Acceptance Tests
     run: TARGET=http://localhost:1337 npm test</code></pre>
+
+          <img src="images/pr-test-result.png" />
+        </section>
+
+
+        <section>
+          <h3>Full Workflow Output</h3>
+
+          <img src="images/pr-complete.png" />
         </section>
 
 
@@ -314,7 +330,7 @@ jobs:
 
 
         <section>
-          <h3>Stage: Build and Push Image</h3>
+          <h3>Steps: Build and Push Docker Image</h3>
 
           <pre><code class="yaml">      - name: Set up Docker Builder
         uses: docker/setup-buildx-action@v1
@@ -331,7 +347,7 @@ jobs:
 
 
         <section>
-          <h3>Stage: Deploy Part 1</h3>
+          <h3>Step: Deploy Part 1</h3>
 
           <pre><code class="yaml">  deploy:
     needs: build
@@ -347,7 +363,7 @@ jobs:
 
 
         <section>
-          <h3>Stage: Deploy Part 2</h3>
+          <h3>Step: Deploy Part 2</h3>
 
           <pre><code class="yaml">          script: |
             docker pull registry.foo.com/x/y:latest
@@ -358,6 +374,13 @@ jobs:
               --name my-app \
               registry.foo.com/x/y:latest \
               node /srv/app.js</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Workflow Dispatch Menu</h3>
+
+          <img src="images/action-menu.png" />
         </section>
 
 
