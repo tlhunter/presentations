@@ -218,13 +218,16 @@ section.intro img {
           <h3>Composability and Secrets</h3>
 
           <ul>
-            <li>Workflows are made up of smaller steps</li>
-            <li>Steps pull in external GitHub repos</li>
-            <li><code>uses: actions/setup-node@v2.1.4</code></li>
-            <li><code>github.com/actions/setup-node</code></li>
+            <li>Workflows &gt; Jobs &gt; Steps</li>
+            <li>Steps can reference external GitHub repos
+              <ul>
+                <li><code>uses: actions/setup-node@v2.1.4</code></li>
+                <li><code>github.com/actions/setup-node</code></li>
+              </ul>
+            </li>
             <li>Secrets are values defined in project settings</li>
             <li>Create Actions for common organization patterns</li>
-            <li>GitHub Actions are Node.js scripts!</li>
+            <li>Bonus: GitHub Actions are Node.js scripts!</li>
           </ul>
         </section>
 
@@ -277,7 +280,7 @@ jobs:
         <section>
           <h3>Step: Run a Linter</h3>
 
-          <pre><code>      - name: Run Linter
+          <pre><code class="yaml">      - name: Run Linter
         run: npm run lint</code></pre>
 
           <img src="images/pr-linter-result.png" />
@@ -287,7 +290,7 @@ jobs:
         <section>
           <h3>Steps: Build Docker, Run Tests</h3>
 
-          <pre><code>  - name: Build and Start Docker Containers
+          <pre><code class="yaml">  - name: Build and Start Docker Containers
     run: docker-compose -f docker-compose.yml up -d
 
   - name: Run Acceptance Tests
