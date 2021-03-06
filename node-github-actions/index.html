@@ -167,22 +167,8 @@ section.intro img {
           <h2>GitHub Actions for Node.js Apps</h2>
           <h3>Thomas Hunter II</h3>
           <br />
-          <p>Inspired by <em>Distributed Systems with Node.js</em>:<br /><a class="bitly" href="http://bit.ly/34SHToF">bit.ly/34SHToF</a></p>
+          <p>Based on <em>Distributed Systems with Node.js</em>:<br /><a class="bitly" href="http://bit.ly/34SHToF">bit.ly/34SHToF</a></p>
         </section>
-
-
-        <!--
-        <section>
-          <h2>Topics</h2>
-
-          <ol>
-            <li><a href="#/ch-overview">Overview</a></li>
-            <li><a href="#/ch-pull-request">Pull Request</a></li>
-            <li><a href="#/ch-merge-main">Merge to Main</a></li>
-          </ol>
-        </section>
-        -->
-
 
         <section id="ch-overview">
           <h2>An Overview of GitHub Actions</h2>
@@ -193,7 +179,7 @@ section.intro img {
           <h3>What are GitHub Actions?</h3>
 
           <ul>
-            <li>A way to run Continuous Integration</li>
+            <li>A way to run Continuous Integration tasks</li>
             <li>Super convenient if your code is on GitHub</li>
             <li>Allocate a VM and run code when triggered</li>
             <li>2,000 mins for Free, 3,000 mins for Pro, etc</li>
@@ -215,10 +201,11 @@ section.intro img {
 
 
         <section>
-          <h3>Composability and Secrets</h3>
+          <h3>Composability</h3>
 
           <ul>
             <li>Workflows &gt; Jobs &gt; Steps</li>
+            <li>Jobs can have dependencies and run in parallel</li>
             <li>Steps can reference external GitHub repos
               <ul>
                 <li><code>uses: actions/setup-node@v2.1.4</code></li>
@@ -233,7 +220,7 @@ section.intro img {
 
 
         <section id="ch-pull-request">
-          <h2>Example Pull Request Workflow</h2>
+          <h2>Example Workflow: Pull Request</h2>
         </section>
 
 
@@ -308,7 +295,7 @@ jobs:
 
 
         <section id="ch-merge-main">
-          <h2>Example Merge to Main Workflow</h2>
+          <h2>Example Workflow: Merge Main</h2>
         </section>
 
 
@@ -350,30 +337,30 @@ jobs:
 
 
         <section>
-          <h3>Step: Deploy Part 1</h3>
+          <h3>Deployment Part 1</h3>
 
-          <pre><code class="yaml">  deploy:
+          <pre><code class="yaml">  deploy: # Job
     needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Deploy app to VPS
         uses: appleboy/ssh-action@v0.1.4
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}</code></pre>
+          host: ${{secrets.SSH_HOST}}
+          username: ${{secrets.SSH_USER}}
+          key: ${{secrets.SSH_KEY}}</code></pre>
         </section>
 
 
         <section>
-          <h3>Step: Deploy Part 2</h3>
+          <h3>Deployment Part 2</h3>
 
           <pre><code class="yaml">          script: |
             docker pull registry.foo.com/x/y:latest
             docker stop my-app || true
             docker rm my-app || true
             docker run -d \
-              -e SOMEVAL=${{ secrets.SOMEVAL }} \
+              -e SOMEVAL=${{secrets.SOMEVAL}} \
               --name my-app \
               registry.foo.com/x/y:latest \
               node /srv/app.js</code></pre>
@@ -384,6 +371,70 @@ jobs:
           <h3>Workflow Dispatch Menu</h3>
 
           <img src="images/action-menu.png" />
+        </section>
+
+
+        <section id="ch-action-code">
+          <h2>Anatomy of an Action</h2>
+          <h3>actions/hello-world-javascript-action</h3>
+        </section>
+
+
+        <section>
+          <h3>Hello World Action: <code>action.yml</code></h3>
+
+          <pre><code class="yaml">name: 'Hello World'
+description: 'Greet someone and record the time'
+inputs:
+  whom: # id of input
+    description: 'Who to greet'
+    required: false
+    default: 'World'
+outputs:
+  time: # id of output
+    description: 'The time we greeted you'
+runs:
+  using: 'node12'
+  main: 'index.js'
+          </code></pre>
+        </section>
+
+
+        <section>
+          <h3>Hello World Action: <code>index.js</code></h3>
+
+          <pre><code class="javascript">const core = require('@actions/core');
+const github = require('@actions/github');
+
+try {
+  const nameToGreet = core.getInput('whom');
+  console.log(`Hello ${nameToGreet}!`);
+
+  const time = new Date().toISOString();
+  core.setOutput('time', time);
+
+  void github.context.payload; // Useful Data
+} catch (error) {
+  core.setFailed(error.message);
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Hello World Action: Usage</h3>
+
+          <pre><code class="javascript">jobs:
+  hello_world:
+    steps:
+      - name: Hello World
+        uses: actions/hello-world-javascript-action
+        id: hello
+        with:
+          whom: 'Audience'
+
+      - name: Echo Outputs
+        run: echo ${{steps.hello.outputs.time}}
+</code></pre>
         </section>
 
 
