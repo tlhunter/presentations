@@ -185,7 +185,7 @@ section.intro img {
           <h3>Let's Define some Terms</h3>
 
           <ul>
-            <li>A <em>Module</em> is a <code>require</code>-able file containing code</li>
+            <li>A <em>Module</em> is a <code>require()</code>-able file containing code</li>
             <li>A <em>Package</em> is an archive of modules, supporting files</li>
             <li>A <em>Dependency</em> is a Package that an app depends on</li>
             <li>A Package makes it easy to distribute modules</li>
@@ -204,6 +204,7 @@ section.intro img {
           <ul>
             <li>Dependencies are listed in <em>package.json</em></li>
             <li>There are several CLI tools to manage packages</li>
+            <li>Latest Node.js ships with <code>corepack</code> wrapper</li>
             <li>Applications can have deps and dev deps</li>
             <li>Dependencies are extracted to <em>node_modules/</em></li>
             <li>Install scripts, compilation, non-determinism</li>
@@ -316,7 +317,16 @@ app/node_modules/express/node_modules/content-type
           <ul>
             <li>The <code><a href="https://pnpm.js.org/">pnpm</a></code> package manager uses symlinks</li>
             <li>Creates a <em>node_modules/.pnpm</em> directory</li>
-            <li><em>node_modules/foo</em> symlinks to <em>.pnpm/foo@1.2.3</em></li>
+            <li><em>node_modules/foo</em> is a symlink to:
+              <ul>
+                <li><em>.pnpm/foo@1.2.3/node_modules/foo</em></li>
+              </ul>
+            </li>
+            <li><code>foo</code>'s dependencies are symlink'd here:
+              <ul>
+                <li><em>.pnpm/foo@1.2.3/node_modules/*</em></li>
+              </ul>
+            </li>
             <li>This approach results in minimal disk usage</li>
           </ul>
         </section>
@@ -442,6 +452,7 @@ app/node_modules/express/node_modules/content-type
             <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
             <li>This presentation: <code><a href="https://bit.ly/3gXZWgx" title="Node.js Package Management">bit.ly/3gXZWgx</a></code></li>
             <li><em>Distributed Systems with Node.js</em>: <code><a href="http://bit.ly/34SHToF">bit.ly/34SHToF</a></code></li>
+            <li><em>Multithreaded JavaScript (2021)</em>: <code><a href="https://bit.ly/3mvoSjp">bit.ly/3mvoSjp</a></code></li>
           </ul>
         </section>
 
