@@ -120,7 +120,7 @@ body {
 }
 
 .reveal .progress span {
-  background-color: var(--delta);
+  background-color: var(--beta);
 }
 .reveal .controls {
   color: var(--gamma);
@@ -183,7 +183,6 @@ section.intro img {
           <h2>Topics</h2>
 
           <ol>
-            <li><a href="#/ch-basics">Basics</a></li>
             <li><a href="#/ch-dedicated">Dedicated Workers</a></li>
             <li><a href="#/ch-shared">Shared Workers</a></li>
             <li><a href="#/ch-service">Service Workers</a></li>
@@ -203,6 +202,7 @@ section.intro img {
           <p><em>It is the nature of JavaScript – and its<br />ecosystem – to be single-threaded.</em></p>
 
           <ul>
+            <li>Presentation from perspective of multithreading</li>
             <li>TODO - message passing</li>
             <li>TODO - shared memory</li>
           </ul>
@@ -252,10 +252,10 @@ section.intro img {
 const worker = new Worker('worker.js');
 
 worker.onmessage = (msg) =&gt; {
-  console.log('message from worker', msg.data);
+  console.log('from worker:', msg.data);
 };
 
-worker.postMessage('message sent to worker');
+worker.postMessage('message to worker');
 
 console.log('hello from end of main.js');
 </code></pre>
@@ -271,13 +271,32 @@ console.log('hello from end of main.js');
 console.log('hello from worker.js');
 
 self.onmessage = (msg) =&gt; {
-  console.log('message from main', msg.data);
+  console.log('from main:', msg.data);
 
   // perform a heavy calculation
 
-  postMessage('message sent from worker');
+  postMessage('message from worker');
 };
 </code></pre>
+        </section>
+
+
+        <section>
+          <h3>Dedicated Worker Output</h3>
+
+          <table>
+            <tr><th>Log</th><th>Location</th></tr>
+            <tr><td>hello from main.js</td>
+            <td>main.js</td></tr>
+            <tr><td>hello from end of main.js</td>
+            <td>main.js</td></tr>
+            <tr><td>hello from worker.js</td>
+            <td>worker.js</td></tr>
+            <tr><td>from main: message to worker</td>
+            <td>worker.js</td></tr>
+            <tr><td>from worker: message from worker
+            <td>main.js</td></tr>
+          </table>
 
         </section>
 
@@ -289,6 +308,7 @@ self.onmessage = (msg) =&gt; {
             <li>Gives access to multi-threading</li>
             <li>Offload CPU intensive work</li>
             <li>Prevent scroll-jank</li>
+            <li><em>Note: Worker dies when parent dies</em></li>
           </ul>
         </section>
 
@@ -303,6 +323,7 @@ self.onmessage = (msg) =&gt; {
 
           <ul>
             <li>Shared Workers can have multiple parents</li>
+            <li>Allows communication across same-origin windows</li>
           </ul>
 
           <img width=300" src="./images/shared-workers.png" />
@@ -312,17 +333,19 @@ self.onmessage = (msg) =&gt; {
         <section>
           <h3>Shared Workers in the Page(s)</h3>
 
-          <pre><code class="javascript">// page1.html and page2.html
-const worker = new SharedWorker('shared-worker.js');
+          <pre><code class="javascript">// red.html and blue.html
+const worker = new SharedWorker('shared.js');
 
 worker.port.onmessage = (event) =&gt; {
   console.log('EVENT', event.data);
 };
-
-setTimeout(() =&gt; {
-  worker.port.postMessage('hello, world');
-}, 1000);
 </code></pre>
+
+          <ul>
+            <li>Later, trigger a message</li>
+          </ul>
+
+          <pre><code class="javascript">worker.port.postMessage('hello, world');</code></pre>
         </section>
 
 
@@ -330,7 +353,7 @@ setTimeout(() =&gt; {
           <h3>Shared Workers in the Worker</h3>
 
           <pre><code class="javascript">const ID = Math.floor(Math.random() * 999999);
-console.log('shared-worker.js', ID);
+console.log('shared.js', ID);
 const ports = new Set();
 self.onconnect = (event) =&gt; {
   const port = event.ports[0];
@@ -347,11 +370,29 @@ self.onconnect = (event) =&gt; {
 
 
         <section>
+          <h3>Shared Worker Output</h3>
+
+          <table>
+            <tr><th>Log</th><th>Location</th></tr>
+            <tr><td>shared.js 123456</td><td>shared.js</td></tr>
+            <tr><td>CONN 123456 1</td><td>shared.js</td></tr>
+            <tr><td>CONN 123456 2</td><td>shared.js</td></tr>
+            <tr><td>MESSAGE 123456 hello, world</td><td>shared.js</td></tr>
+            <tr><td>EVENT [ 123456, "hello, world" ]</td><td>red.html</td></tr>
+            <tr><td>EVENT [ 123456, "hello, world" ]</td><td>blue.html</td></tr>
+          </table>
+        </section>
+
+
+        <section>
           <h3>Why use a Shared Worker?</h3>
 
           <ul>
             <li>You need to facilitate comms across pages</li>
-            <li>You don't need to support Safari</li>
+            <li>You want variable contexts to outlive a page</li>
+            <li>❌ You don't need to support Safari</li>
+            <li>TODO: <code>BroadcastChannel</code> as an alternative</li>
+            <li><em>Note: Worker dies when last parent dies</em></li>
           </ul>
         </section>
 
@@ -366,11 +407,102 @@ self.onconnect = (event) =&gt; {
 
           <ul>
             <li>The most complex of the Web Workers</li>
-            <li>Intercepts requests made to server</li>
+            <li>Intercept / proxy requests made to server</li>
             <li>Can have zero parents, run in background</li>
+            <li>Can share state between same-origin windows</li>
           </ul>
 
           <img width=300" src="./images/service-workers.png" />
+        </section>
+
+
+        <section>
+          <h3>Service Workers in the Page(s)</h3>
+
+          <pre><code class="javascript">// main.js
+
+navigator.serviceWorker.register('/sw.js',
+  scope: '/' });
+
+navigator.serviceWorker.oncontrollerchange = () =&gt; {
+  console.log('controller change');
+};
+
+async function makeRequest() {
+  const result = await fetch('/data.json');
+  const payload = await result.json();
+  console.log(payload);
+}</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Service Workers in the Worker</h3>
+
+          <pre><code class="javascript">// sw.js part 1
+let counter = 0;
+
+self.oninstall = (event) =&gt; {
+  console.log('service worker install');
+};
+
+self.onactivate = (event) =&gt; {
+  console.log('service worker activate');
+  event.waitUntil(self.clients.claim());
+};</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Service Workers in the Worker</h3>
+
+          <pre><code class="javascript">// sw.js, part 2
+self.onfetch = (event) =&gt; {
+  console.log('fetch', event.request.url);
+  if (event.request.url.endsWith('/data.json')) {
+    counter++;
+    return void event.respondWith(
+      new Response(JSON.stringify({counter}), {
+        headers: { 'Content-Type': 'text/json' }
+      })
+    );
+  }
+  // fallback to normal HTTP request
+  event.respondWith(fetch(event.request));
+};</code></pre>
+        </section>
+
+        <section>
+          <h3>Service Worker Output</h3>
+
+          TODO
+        </section>
+
+
+        <section>
+          <h3>Why use a Service Worker?</h3>
+
+          <ul>
+            <li>Cache network assets when offline</li>
+            <li>Perform background syncs of updated content</li>
+            <li>Push notifications</li>
+            <li>Support "Add to Homescreen" on Android / iOS</li>
+            <li><em>Note: Worker might die when last parent dies</em></li>
+          </ul>
+        </section>
+
+
+        <section id="ch-conclusion">
+          <h2>Conclusion</h2>
+          <table>
+            <tr><th></th><th>Dedicated</th><th>Shared</th><th>Service</th></tr>
+            <tr><td>Thread</td><td>✅</td><td>✅</td><td>✅</td></tr>
+            <tr><td>No TLS</td><td>✅</td><td>✅</td><td>❌</td></tr>
+            <tr><td>Pages</td><td>1..1</td><td>N..1</td><td>N..0</td></tr>
+            <tr><td>Safari</td><td>✅</td><td>❌</td><td>✅</td></tr>
+            <tr><td>Proxy</td><td>❌</td><td>❌</td><td>✅</td></tr>
+            <tr><td>Dies</td><td>With Parent</td><td>Last Parent</td><td>Tricky</td></tr>
+          </table>
         </section>
 
 
@@ -378,6 +510,7 @@ self.onconnect = (event) =&gt; {
           <h3>Fin</h3>
 
           <ul>
+            <!-- https://www.onemodel.app/d/1sySoaF2dYfb1TzXuhoag -->
             <li>Follow me: <code><a href="https://twitter.com/MultithreadedJS" title="Twitter @MultithreadedJS">@MultithreadedJS</a></code></li>
             <li>This presentation: <code><a href="https://bit.ly/JS-WW" title="A Comparison of Web Workers">bit.ly/JS-WW</a></code></li>
             <li><em>Multithreaded JavaScript (2021)</em>: <code><a href="https://bit.ly/3mvoSjp">bit.ly/3mvoSjp</a></code></li>
