@@ -45,7 +45,7 @@ body {
   max-height: 500px;
   padding: 10px 17px;
   border-radius: 10px;
-  background-color: var(--omega);
+  background-color: var(--theta);
 }
 .reveal p code,
 .reveal table code,
@@ -63,8 +63,9 @@ body {
 .reveal h3 code {
   font-size: 0.8em;
 }
-.reveal li code a {
-  color: var(--beta);
+.reveal li code a,
+.reveal code a {
+  color: var(--theta);
 }
 
 .reveal h1,
@@ -160,7 +161,7 @@ section.intro img {
 </style>
   </head>
   <body>
-    <div id="twitter" class="floater"><a href="https://twitter.com/tlhunter">@tlhunter</a></div>
+    <div id="twitter" class="floater"><a href="https://twitter.com/MultithreadedJS">@MultithreadedJS</a></div>
     <div id="website" class="floater"><a href="http://bit.ly/3mvoSjp"><img src="../_meta/multithreaded-javascript.png" /></a></div>
 
     <div class="reveal">
@@ -202,7 +203,8 @@ section.intro img {
           <p><em>It is the nature of JavaScript – and its<br />ecosystem – to be single-threaded.</em></p>
 
           <ul>
-            <li>TODO</li>
+            <li>TODO - message passing</li>
+            <li>TODO - shared memory</li>
           </ul>
         </section>
 
@@ -213,13 +215,81 @@ section.intro img {
 
 
         <section>
-          <h3>TODO</h3>
+          <h3>What is a Dedicated Worker?</h3>
 
           <ul>
-            <li>TODO</li>
+            <li>Dedicated Workers have exactly one parent</li>
+            <li>Can be loaded as a hierarchy</li>
+            <li>Each worker is a new JavaScript environment</li>
           </ul>
 
-          <pre><code class="javascript">TODO</code></pre>
+          <img width=300" src="./images/dedicated-workers.png" alt="Dedicated Workers have exactly one parent and can form a hierarchy" />
+        </section>
+
+
+        <!--
+        <section>
+          <h3>How do I use it?</h3>
+
+          <pre><code class="html">&lt;!-- index.html --&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Web Workers Hello World&lt;/title&gt;
+    &lt;script src="main.js"&gt;&lt;/script&gt;
+  &lt;/head&gt;
+&lt;/html&gt;
+</code></pre>
+
+        </section>
+        -->
+
+
+        <section>
+          <h3>Dedicated Workers in the Page</h3>
+
+          <pre><code class="javascript">console.log('hello from main.js');
+
+const worker = new Worker('worker.js');
+
+worker.onmessage = (msg) =&gt; {
+  console.log('message from worker', msg.data);
+};
+
+worker.postMessage('message sent to worker');
+
+console.log('hello from end of main.js');
+</code></pre>
+
+        </section>
+
+
+        <section>
+          <h3>Dedicated Workers in the Worker</h3>
+
+          <pre><code class="javascript">// worker.js
+
+console.log('hello from worker.js');
+
+self.onmessage = (msg) =&gt; {
+  console.log('message from main', msg.data);
+
+  // perform a heavy calculation
+
+  postMessage('message sent from worker');
+};
+</code></pre>
+
+        </section>
+
+
+        <section>
+          <h3>Why use a Dedicated Worker?</h3>
+
+          <ul>
+            <li>Gives access to multi-threading</li>
+            <li>Offload CPU intensive work</li>
+            <li>Prevent scroll-jank</li>
+          </ul>
         </section>
 
 
@@ -229,13 +299,60 @@ section.intro img {
 
 
         <section>
-          <h3>TODO</h3>
+          <h3>What is a Shared Worker?</h3>
 
           <ul>
-            <li>TODO</li>
+            <li>Shared Workers can have multiple parents</li>
           </ul>
 
-          <pre><code class="javascript">TODO</code></pre>
+          <img width=300" src="./images/shared-workers.png" />
+        </section>
+
+
+        <section>
+          <h3>Shared Workers in the Page(s)</h3>
+
+          <pre><code class="javascript">// page1.html and page2.html
+const worker = new SharedWorker('shared-worker.js');
+
+worker.port.onmessage = (event) =&gt; {
+  console.log('EVENT', event.data);
+};
+
+setTimeout(() =&gt; {
+  worker.port.postMessage('hello, world');
+}, 1000);
+</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Shared Workers in the Worker</h3>
+
+          <pre><code class="javascript">const ID = Math.floor(Math.random() * 999999);
+console.log('shared-worker.js', ID);
+const ports = new Set();
+self.onconnect = (event) =&gt; {
+  const port = event.ports[0];
+  ports.add(port);
+  console.log('CONN', ID, ports.size);
+  port.onmessage = (event) =&gt; {
+    console.log('MESSAGE', ID, event.data);
+    for (let p of ports) {
+      p.postMessage([ID, event.data]);
+    }
+  };
+};</code></pre>
+        </section>
+
+
+        <section>
+          <h3>Why use a Shared Worker?</h3>
+
+          <ul>
+            <li>You need to facilitate comms across pages</li>
+            <li>You don't need to support Safari</li>
+          </ul>
         </section>
 
 
@@ -245,13 +362,15 @@ section.intro img {
 
 
         <section>
-          <h3>TODO</h3>
+          <h3>What is a Service Worker?</h3>
 
           <ul>
-            <li>TODO</li>
+            <li>The most complex of the Web Workers</li>
+            <li>Intercepts requests made to server</li>
+            <li>Can have zero parents, run in background</li>
           </ul>
 
-          <pre><code class="javascript">TODO</code></pre>
+          <img width=300" src="./images/service-workers.png" />
         </section>
 
 
@@ -259,7 +378,7 @@ section.intro img {
           <h3>Fin</h3>
 
           <ul>
-            <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
+            <li>Follow me: <code><a href="https://twitter.com/MultithreadedJS" title="Twitter @MultithreadedJS">@MultithreadedJS</a></code></li>
             <li>This presentation: <code><a href="https://bit.ly/JS-WW" title="A Comparison of Web Workers">bit.ly/JS-WW</a></code></li>
             <li><em>Multithreaded JavaScript (2021)</em>: <code><a href="https://bit.ly/3mvoSjp">bit.ly/3mvoSjp</a></code></li>
           </ul>
