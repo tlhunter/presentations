@@ -102,9 +102,11 @@ body {
   box-shadow: none;
 }
 .reveal blockquote {
-  text-align: left;
   width: auto;
   padding: 0.5em 1em;
+  box-shadow: none;
+  font-size: 125%;
+  color: var(--omega);
 }
 .reveal blockquote .author {
   text-align: right;
@@ -158,6 +160,10 @@ section.intro img {
 .reveal table.shrink {
   font-size: 30px;
 }
+
+.reveal table.centers td {
+  text-align: center;
+}
 </style>
   </head>
   <body>
@@ -192,19 +198,36 @@ section.intro img {
 
         <section id="ch-basics">
           <h2>Basics</h2>
-          <h3>And a quick history lesson.</h3>
         </section>
 
 
         <section>
-          <h3>History</h3>
+          <h3>Multithreading in JavaScript</h3>
 
-          <p><em>It is the nature of JavaScript – and its<br />ecosystem – to be single-threaded.</em></p>
+          <blockquote>
+            It is the nature of JavaScript – and its<br />
+            ecosystem – to be single-threaded.
+          </blockquote>
 
           <ul>
+            <li>For the longest time no multithreading in JS</li>
+            <li>Could pull off basic message passing via iframes</li>
+            <li>Now we have Web Workers and shared memory</li>
             <li>Presentation from perspective of multithreading</li>
-            <li>TODO - message passing</li>
-            <li>TODO - shared memory</li>
+          </ul>
+        </section>
+
+
+        <section>
+          <h3>What is a JavaScript Environment?</h3>
+
+          <ul>
+            <li>Isolated collection of variables, globals</li>
+            <li>Different versions of <code>Object</code>, prototypes</li>
+            <li>Each environment incurs overhead (~6MB Node.js)</li>
+            <li>Object instances cannot be shared</li>
+            <li>Serialized versions, JSON, can be passed</li>
+            <li><code>SharedArrayBuffer</code> data can be shared</li>
           </ul>
         </section>
 
@@ -388,10 +411,13 @@ self.onconnect = (event) =&gt; {
           <h3>Why use a Shared Worker?</h3>
 
           <ul>
-            <li>You need to facilitate comms across pages</li>
+            <li>You need to communicate across pages</li>
             <li>You want variable contexts to outlive a page</li>
-            <li>❌ You don't need to support Safari</li>
-            <li>TODO: <code>BroadcastChannel</code> as an alternative</li>
+            <li>❌ You don't need to support Safari
+              <ul>
+                <li>Consider <code>BroadcastChannel</code> as an alternative</li>
+              </ul>
+            </li>
             <li><em>Note: Worker dies when last parent dies</em></li>
           </ul>
         </section>
@@ -419,10 +445,9 @@ self.onconnect = (event) =&gt; {
         <section>
           <h3>Service Workers in the Page(s)</h3>
 
-          <pre><code class="javascript">// main.js
-
-navigator.serviceWorker.register('/sw.js',
-  scope: '/' });
+          <pre><code class="javascript">navigator.serviceWorker.register('/sw.js', {
+  scope: '/'
+});
 
 navigator.serviceWorker.oncontrollerchange = () =&gt; {
   console.log('controller change');
@@ -475,7 +500,16 @@ self.onfetch = (event) =&gt; {
         <section>
           <h3>Service Worker Output</h3>
 
-          TODO
+          <table>
+            <tr><th>Log</th><th>Location</th></tr>
+            <tr><td> controller change</td><td>main.js</td></tr>
+            <tr><td>service worker install</td><td> sw.js</td></tr>
+            <tr><td>service worker activate</td><td> sw.js</td></tr>
+            <tr><td colspan="2" align="center"><code>makeRequest();</code></td></tr>
+            <tr><td>fetch http://localhost:5000/data.json</td><td> sw.js</td></tr>
+            <tr><td>Object { counter: 1 }</td><td>main.js</td></tr>
+          </table>
+
         </section>
 
 
@@ -486,32 +520,32 @@ self.onfetch = (event) =&gt; {
             <li>Cache network assets when offline</li>
             <li>Perform background syncs of updated content</li>
             <li>Push notifications</li>
-            <li>Support "Add to Homescreen" on Android / iOS</li>
+            <li>PWA / "Add to Homescreen" on Android &amp; iOS</li>
             <li><em>Note: Worker might die when last parent dies</em></li>
           </ul>
         </section>
 
 
         <section id="ch-conclusion">
-          <h2>Conclusion</h2>
-          <table>
+          <h2>Web Worker Comparison Matrix</h2>
+          <table class="centers">
             <tr><th></th><th>Dedicated</th><th>Shared</th><th>Service</th></tr>
-            <tr><td>Thread</td><td>✅</td><td>✅</td><td>✅</td></tr>
-            <tr><td>No TLS</td><td>✅</td><td>✅</td><td>❌</td></tr>
-            <tr><td>Pages</td><td>1..1</td><td>N..1</td><td>N..0</td></tr>
-            <tr><td>Safari</td><td>✅</td><td>❌</td><td>✅</td></tr>
-            <tr><td>Proxy</td><td>❌</td><td>❌</td><td>✅</td></tr>
-            <tr><td>Dies</td><td>With Parent</td><td>Last Parent</td><td>Tricky</td></tr>
+            <tr><th>Thread</th><td>✅</td><td>✅</td><td>✅</td></tr>
+            <tr><th>No TLS</th><td>✅</td><td>✅</td><td>❌</td></tr>
+            <tr><th>Parents</th><td>1</td><td>&gt;= 1</td><td>&gt;= 0</td></tr>
+            <tr><th>Safari</th><td>✅</td><td>❌</td><td>✅</td></tr>
+            <tr><th>Proxy, PWA</th><td>❌</td><td>❌</td><td>✅</td></tr>
+            <tr><th>Death</th><td>With Parent</td><td>Last Parent</td><td>Tricky</td></tr>
           </table>
         </section>
 
 
         <section id="final">
-          <h3>Fin</h3>
+          <h3>A Comparison of Web Workers</h3>
 
           <ul>
             <!-- https://www.onemodel.app/d/1sySoaF2dYfb1TzXuhoag -->
-            <li>Follow me: <code><a href="https://twitter.com/MultithreadedJS" title="Twitter @MultithreadedJS">@MultithreadedJS</a></code></li>
+            <li>Follow me: <code><a href="https://twitter.com/tlhunter" title="Twitter @tlhunter">@tlhunter</a></code></li>
             <li>This presentation: <code><a href="https://bit.ly/JS-WW" title="A Comparison of Web Workers">bit.ly/JS-WW</a></code></li>
             <li><em>Multithreaded JavaScript (2021)</em>: <code><a href="https://bit.ly/3mvoSjp">bit.ly/3mvoSjp</a></code></li>
           </ul>
