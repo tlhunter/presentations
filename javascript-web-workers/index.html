@@ -228,6 +228,7 @@ section.intro img {
             <li>Object instances cannot be shared</li>
             <li>Serialized versions, JSON, can be passed</li>
             <li><code>SharedArrayBuffer</code> data can be shared</li>
+            <li><em>Hand-waving over complexities of contexts/realms</em></li>
           </ul>
         </section>
 
@@ -328,7 +329,7 @@ self.onmessage = (msg) =&gt; {
           <h3>Why use a Dedicated Worker?</h3>
 
           <ul>
-            <li>Gives access to multi-threading</li>
+            <li>Gives access to an additional thread</li>
             <li>Offload CPU intensive work</li>
             <li>Prevent scroll-jank</li>
             <li><em>Note: Worker dies when parent dies</em></li>
@@ -413,6 +414,7 @@ self.onconnect = (event) =&gt; {
           <ul>
             <li>You need to communicate across pages</li>
             <li>You want variable contexts to outlive a page</li>
+            <li>You want a cross-page singleton source of truth</li>
             <li>❌ You don't need to support Safari
               <ul>
                 <li>Consider <code>BroadcastChannel</code> as an alternative</li>
@@ -531,10 +533,10 @@ self.onfetch = (event) =&gt; {
           <table class="centers">
             <tr><th></th><th>Dedicated</th><th>Shared</th><th>Service</th></tr>
             <tr><th>Thread</th><td>✅</td><td>✅</td><td>✅</td></tr>
-            <tr><th>No TLS</th><td>✅</td><td>✅</td><td>❌</td></tr>
-            <tr><th>Parents</th><td>1</td><td>&gt;= 1</td><td>&gt;= 0</td></tr>
+            <tr><th>No HTTPS</th><td>✅</td><td>✅</td><td>❌</td></tr>
             <tr><th>Safari</th><td>✅</td><td>❌</td><td>✅</td></tr>
-            <tr><th>Proxy, PWA</th><td>❌</td><td>❌</td><td>✅</td></tr>
+            <tr><th>HTTP Proxy</th><td>❌</td><td>❌</td><td>✅</td></tr>
+            <tr><th>Parents</th><td>1</td><td>&gt;= 1</td><td>&gt;= 0</td></tr>
             <tr><th>Death</th><td>With Parent</td><td>Last Parent</td><td>Tricky</td></tr>
           </table>
         </section>
