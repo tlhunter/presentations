@@ -161,13 +161,14 @@ section.intro img {
   font-size: 30px;
 }
 
-.reveal table.centers td {
+.reveal table.centers td,
+.reveal table.centers thead th {
   text-align: center;
 }
 </style>
   </head>
   <body>
-    <div id="twitter" class="floater"><a href="https://twitter.com/MultithreadedJS">@MultithreadedJS</a></div>
+    <div id="twitter" class="floater"><a href="https://twitter.com/tlhunter">@tlhunter</a></div>
     <div id="website" class="floater"><a href="http://bit.ly/3mvoSjp"><img src="../_meta/multithreaded-javascript.png" /></a></div>
 
     <div class="reveal">
@@ -449,7 +450,7 @@ self.onconnect = (event) =&gt; {
           <h3>Service Workers in the Page(s)</h3>
 
           <pre><code class="javascript">navigator.serviceWorker.register('/sw.js', {
-  scope: '/'
+  scope: '/' // URL range that worker can control
 });
 
 navigator.serviceWorker.oncontrollerchange = () =&gt; {
@@ -476,6 +477,7 @@ self.oninstall = (event) =&gt; {
 
 self.onactivate = (event) =&gt; {
   console.log('service worker activate');
+  // allow immediate control of opened pages
   event.waitUntil(self.clients.claim());
 };</code></pre>
         </section>
@@ -505,11 +507,11 @@ self.onfetch = (event) =&gt; {
 
           <table>
             <tr><th>Log</th><th>Location</th></tr>
-            <tr><td> controller change</td><td>main.js</td></tr>
-            <tr><td>service worker install</td><td> sw.js</td></tr>
-            <tr><td>service worker activate</td><td> sw.js</td></tr>
+            <tr><td>service worker install</td><td>sw.js</td></tr>
+            <tr><td>service worker activate</td><td>sw.js</td></tr>
+            <tr><td>controller change</td><td>main.js</td></tr>
             <tr><td colspan="2" align="center"><code>makeRequest();</code></td></tr>
-            <tr><td>fetch http://localhost:5000/data.json</td><td> sw.js</td></tr>
+            <tr><td>fetch http://localhost:5000/data.json</td><td>sw.js</td></tr>
             <tr><td>Object { counter: 1 }</td><td>main.js</td></tr>
           </table>
 
@@ -532,13 +534,17 @@ self.onfetch = (event) =&gt; {
         <section id="ch-conclusion">
           <h2>Web Worker Comparison Matrix</h2>
           <table class="centers">
-            <tr><th></th><th>Dedicated</th><th>Shared</th><th>Service</th></tr>
-            <tr><th>Thread</th><td>✅</td><td>✅</td><td>✅</td></tr>
-            <tr><th>No HTTPS</th><td>✅</td><td>✅</td><td>❌</td></tr>
-            <tr><th>Safari</th><td>✅</td><td>❌</td><td>✅</td></tr>
-            <tr><th>HTTP Proxy</th><td>❌</td><td>❌</td><td>✅</td></tr>
-            <tr><th>Parents</th><td>1</td><td>&gt;= 1</td><td>&gt;= 0</td></tr>
-            <tr><th>Death</th><td>With Parent</td><td>Last Parent</td><td>Tricky</td></tr>
+            <thead>
+              <tr><th></th><th>Dedicated</th><th>Shared</th><th>Service</th></tr>
+            </thead>
+            <tbody>
+              <tr><th>Thread</th><td>✅</td><td>✅</td><td>✅</td></tr>
+              <tr><th>No HTTPS</th><td>✅</td><td>✅</td><td>❌</td></tr>
+              <tr><th>Safari</th><td>✅</td><td>❌</td><td>✅</td></tr>
+              <tr><th>HTTP Proxy</th><td>❌</td><td>❌</td><td>✅</td></tr>
+              <tr><th>Parents</th><td>1</td><td>&gt;= 1</td><td>&gt;= 0</td></tr>
+              <tr><th>Death</th><td>With Parent</td><td>Last Parent</td><td>Tricky</td></tr>
+            </tbody>
           </table>
         </section>
 
