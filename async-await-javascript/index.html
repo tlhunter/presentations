@@ -99,13 +99,13 @@ body {
 .reveal .controls .navigate-up, .reveal .controls .navigate-down {
   visibility: none;
 }
-#twitter {
+#social {
   position: absolute;
   left: 20px;
   bottom: 20px;
   font-size: 3em;
 }
-#twitter, #twitter a {
+#social, #social a {
   color: #D7DADB;
   text-decoration: none;
   font-family: "Source Sans Pro", Helvetica, sans-serif;
@@ -116,7 +116,7 @@ body {
   </head>
 
   <body>
-    <div id="twitter"><a href="https://twitter.com/tlhunter">@tlhunter</a></div>
+    <div id="social"><a href="https://mastodon.social/@tlhunter">@tlhunter@mastodon.social</a></div>
     <div class="reveal">
       <div class="slides">
 
@@ -519,7 +519,7 @@ pifall(fs)
         <section>
           <h2>Fin</h2>
           <ul>
-            <li>Follow me: <a href="https://twitter.com/tlhunter">@tlhunter</a></li>
+            <li>Follow me: <a href="https://mastodon.social/@tlhunter">@tlhunter@mastodon.social</a></li>
             <li><em>Distributed Systems with Node.js</em>: <code><a href="http://bit.ly/34SHToF">bit.ly/34SHToF</a></code></li>
           </ul>
         </section>
@@ -533,6 +533,7 @@ pifall(fs)
 
     <script>
       Reveal.initialize({
+        history: true,
         dependencies: [
           { src: 'plugin/markdown/marked.js' },
           { src: 'plugin/markdown/markdown.js' },
